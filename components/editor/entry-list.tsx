@@ -12,6 +12,7 @@ type EntrySummary = { title: string; subtitle: string };
 type EntryListProps<T extends { id: string }> = {
   entries: T[];
   noun: string;
+  deleteTitle?: string;
   emptyMessage: string;
   renderSummary: (entry: T) => EntrySummary;
   renderForm: (entry: T) => ReactNode;
@@ -22,6 +23,7 @@ type EntryListProps<T extends { id: string }> = {
 export function EntryList<T extends { id: string }>({
   entries,
   noun,
+  deleteTitle,
   emptyMessage,
   renderSummary,
   renderForm,
@@ -95,7 +97,7 @@ export function EntryList<T extends { id: string }>({
               </button>
               <ConfirmDeleteButton
                 label={`Delete ${displayTitle}`}
-                title={`Delete this ${noun} entry?`}
+                title={deleteTitle ?? `Delete this ${noun} entry?`}
                 description={`"${displayTitle}" will be removed from your CV.`}
                 onConfirm={() => onDelete(entry.id)}
                 finalFocus={addRef}

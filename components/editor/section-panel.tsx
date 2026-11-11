@@ -1,12 +1,28 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { FileText } from "lucide-react";
+import { useEffect, useRef, type ComponentType } from "react";
+import { CertificationsSection } from "@/components/editor/certifications-section";
+import { CustomSectionsSection } from "@/components/editor/custom-sections-section";
 import { EducationSection } from "@/components/editor/education-section";
 import { ExperienceSection } from "@/components/editor/experience-section";
+import { LanguagesSection } from "@/components/editor/languages-section";
 import { PersonalSection } from "@/components/editor/personal-section";
+import { ProjectsSection } from "@/components/editor/projects-section";
+import { SkillsSection } from "@/components/editor/skills-section";
 import { SummarySection } from "@/components/editor/summary-section";
-import type { EditorSection } from "@/lib/cv/sections";
+import type { EditorSection, EditorSectionId } from "@/lib/cv/sections";
+
+const SECTION_FORMS: Record<EditorSectionId, ComponentType> = {
+  personal: PersonalSection,
+  summary: SummarySection,
+  experience: ExperienceSection,
+  education: EducationSection,
+  skills: SkillsSection,
+  projects: ProjectsSection,
+  certifications: CertificationsSection,
+  languages: LanguagesSection,
+  custom: CustomSectionsSection,
+};
 
 type SectionPanelProps = {
   section: EditorSection;
@@ -15,6 +31,7 @@ type SectionPanelProps = {
 
 export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const SectionForm = SECTION_FORMS[section.id];
 
   useEffect(() => {
     if (focusOnChange) headingRef.current?.focus();
@@ -33,23 +50,7 @@ export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
         </h1>
         <p className="mt-1 text-[13px] text-muted-foreground">{section.description}</p>
       </div>
-      {section.id === "personal" ? (
-        <PersonalSection />
-      ) : section.id === "summary" ? (
-        <SummarySection />
-      ) : section.id === "experience" ? (
-        <ExperienceSection />
-      ) : section.id === "education" ? (
-        <EducationSection />
-      ) : (
-        <div className="flex flex-col items-center gap-2 rounded-[10px] border border-dashed border-input bg-card px-6 py-12 text-center">
-          <FileText aria-hidden="true" className="size-6 text-faint" />
-          <p className="text-sm font-medium">Nothing here yet</p>
-          <p className="max-w-sm text-[13px] text-muted-foreground">
-            Editing for this section is on its way.
-          </p>
-        </div>
-      )}
+      <SectionForm key={section.id} />
     </section>
   );
 }
