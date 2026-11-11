@@ -1,0 +1,116 @@
+/* Resumely theme - the durable output of /prototype.
+   Port the variables into app/globals.css (shadcn CSS variables + @theme inline)
+   in the first UI feature. In the app, load Geist through next/font instead of
+   this @import. Mockups in this folder are reference only. */
+
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
+
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --bg: #f7f7f9;            /* app background            */
+  --surface: #ffffff;       /* cards, panels, inputs     */
+  --surface-2: #f2f2f6;     /* subtle fills, hover rows  */
+  --border: #e7e7ec;
+  --border-strong: #d5d5dd;
+  --overlay: rgba(23, 23, 28, 0.04);
+
+  /* text */
+  --text: #17171c;
+  --muted: #5e5e6b;
+  --faint: #9999a6;
+
+  /* accent (indigo-violet) */
+  --accent: #5b5bd6;
+  --accent-hover: #4b4bc4;
+  --accent-ink: #ffffff;
+  --accent-soft: #eeeefc;     /* active nav, selected cards */
+  --accent-soft-ink: #4343b3;
+  --focus-ring: 0 0 0 3px rgba(91, 91, 214, 0.28);
+
+  /* status: ATS pass / warn / fail, validation, toasts */
+  --success: #1c9561;
+  --success-soft: #e5f5ed;
+  --warning: #b2721a;
+  --warning-soft: #fcf2df;
+  --danger: #d43d4b;
+  --danger-soft: #fcebed;
+
+  /* preview canvas (the CV page itself never follows the app theme) */
+  --canvas: #ebebf0;
+  --page: #ffffff;
+  --page-shadow: 0 1px 2px rgba(16, 16, 24, 0.06), 0 8px 28px rgba(16, 16, 24, 0.1);
+
+  /* CV document defaults - overridden per CV by template customization */
+  --cv-primary: #2f3b8f;
+  --cv-text: #1d1d22;
+  --cv-muted: #5a5a64;
+  --cv-rule: #d9d9e0;
+  --cv-font: "Geist", Arial, sans-serif;
+
+  /* type */
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+
+  /* spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* shape and depth */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(16, 16, 24, 0.05);
+  --shadow: 0 1px 2px rgba(16, 16, 24, 0.04), 0 4px 16px rgba(16, 16, 24, 0.06);
+  --shadow-lift: 0 12px 32px rgba(16, 16, 24, 0.16);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0f0f13;
+  --surface: #17171d;
+  --surface-2: #1f1f27;
+  --border: #2a2a34;
+  --border-strong: #383844;
+  --overlay: rgba(255, 255, 255, 0.04);
+
+  --text: #ececf1;
+  --muted: #a3a3b0;
+  --faint: #6c6c7a;
+
+  --accent: #6c6ce6;
+  --accent-hover: #7d7df0;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(124, 124, 240, 0.15);
+  --accent-soft-ink: #b0b0ff;
+  --focus-ring: 0 0 0 3px rgba(124, 124, 240, 0.4);
+
+  --success: #3fbf86;
+  --success-soft: rgba(63, 191, 134, 0.14);
+  --warning: #e0a23e;
+  --warning-soft: rgba(224, 162, 62, 0.14);
+  --danger: #f06470;
+  --danger-soft: rgba(240, 100, 112, 0.14);
+
+  --canvas: #0a0a0d;
+  --page-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.3);
+  --shadow-lift: 0 14px 36px rgba(0, 0, 0, 0.55);
+}

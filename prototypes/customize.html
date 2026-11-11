@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resumely - Customize</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--font-sans); font-size: var(--text-base); color: var(--text); background: var(--bg); height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .mono { font-family: var(--font-mono); }
+
+  .btn { display: inline-flex; align-items: center; gap: var(--space-2); height: 34px; padding: 0 var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); font-size: var(--text-sm); font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .btn:hover { background: var(--surface-2); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow-sm); }
+  .btn.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+  .btn.ghost:hover { background: var(--surface-2); color: var(--text); }
+  .btn.icon { width: 34px; padding: 0; justify-content: center; }
+  .btn.sm { height: 28px; font-size: var(--text-xs); padding: 0 var(--space-2); }
+  .btn.sm.icon { width: 28px; }
+
+  .topbar { height: 56px; flex: none; display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-4); background: var(--surface); border-bottom: 1px solid var(--border); }
+  .logo { display: flex; align-items: center; gap: var(--space-2); font-weight: 600; font-size: var(--text-md); }
+  .logo-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 14px; font-weight: 700; }
+  .vsep { width: 1px; height: 22px; background: var(--border); }
+  .spacer { flex: 1; }
+  .back { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--text); }
+
+  .workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: 392px 1fr; }
+
+  .panel { background: var(--surface); border-right: 1px solid var(--border); overflow: auto; }
+  .panel-head { position: sticky; top: 0; z-index: 2; background: var(--surface); padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border); display: flex; align-items: center; }
+  .panel-head h1 { font-size: var(--text-md); font-weight: 600; flex: 1; }
+  .reset { font-size: var(--text-xs); color: var(--muted); }
+  .group { padding: var(--space-5); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: var(--space-4); }
+  .group h2 { font-size: var(--text-xs); color: var(--faint); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+
+  .templates { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+  .tpl { display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+  .tpl span { font-size: var(--text-xs); color: var(--muted); text-align: center; }
+  .thumb { aspect-ratio: 210 / 297; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--page); padding: 12% 12%; display: flex; flex-direction: column; gap: 5%; position: relative; }
+  .tpl:hover .thumb { border-color: var(--border-strong); }
+  .tpl.on .thumb { border-color: var(--accent); box-shadow: var(--focus-ring); }
+  .tpl.on span { color: var(--accent-soft-ink); font-weight: 500; }
+  .tpl.on .thumb::after { content: ""; position: absolute; top: 6px; right: 6px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 9px no-repeat; }
+  .ln { height: 3px; border-radius: 2px; background: var(--cv-rule); }
+  .ln.h { height: 6px; background: var(--cv-text); width: 60%; }
+  .ln.c { background: var(--cv-primary); }
+  .ln.s { width: 70%; } .ln.m { width: 85%; }
+  .center { align-items: center; }
+  .split { flex-direction: row; gap: 8%; padding: 0; overflow: hidden; }
+  .split .side { width: 34%; background: color-mix(in srgb, var(--cv-primary) 9%, var(--page)); padding: 14% 8%; display: flex; flex-direction: column; gap: 6%; }
+  .split .main { flex: 1; padding: 14% 8% 0 0; display: flex; flex-direction: column; gap: 5%; }
+
+  .row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .row label { font-size: var(--text-sm); font-weight: 500; }
+  .row .val { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--muted); }
+  .select { display: flex; align-items: center; justify-content: space-between; height: 36px; padding: 0 var(--space-3); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); font-size: var(--text-sm); }
+  .select em { font-style: normal; font-size: var(--text-xs); color: var(--success); margin-left: 6px; }
+  .slider { position: relative; height: 18px; display: flex; align-items: center; }
+  .slider .track { width: 100%; height: 4px; border-radius: 99px; background: var(--surface-2); }
+  .slider .fill { position: absolute; left: 0; height: 4px; border-radius: 99px; background: var(--accent); }
+  .slider .thumb-dot { position: absolute; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); box-shadow: var(--shadow-sm); }
+  .field { display: flex; flex-direction: column; gap: var(--space-2); }
+
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; border-radius: var(--radius-sm); background: var(--surface-2); gap: 2px; }
+  .seg span { font-size: var(--text-xs); font-weight: 500; padding: 6px 8px; border-radius: 4px; color: var(--muted); text-align: center; }
+  .seg span.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+  .seg small { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--faint); font-weight: 400; }
+
+  .swatches { display: flex; gap: var(--space-2); align-items: center; }
+  .sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--border); cursor: pointer; }
+  .sw.on { box-shadow: 0 0 0 2px var(--accent); }
+  .hex { margin-left: auto; height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 var(--space-2); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--text-xs); }
+  .hex i { width: 12px; height: 12px; border-radius: 3px; background: var(--cv-primary); }
+
+  .order { display: flex; flex-direction: column; gap: 6px; }
+  .order-item { display: flex; align-items: center; gap: var(--space-2); height: 40px; padding: 0 var(--space-2) 0 var(--space-1); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); font-size: var(--text-sm); }
+  .order-item .grip { color: var(--faint); width: 24px; display: grid; place-items: center; cursor: grab; }
+  .order-item .name { flex: 1; }
+  .order-item.locked { background: var(--bg); color: var(--muted); }
+  .order-item.locked .grip { opacity: .35; cursor: default; }
+  .order-item.off .name { color: var(--faint); text-decoration: line-through; }
+  .order-item.dragging { border-color: var(--accent); box-shadow: var(--shadow-lift); transform: translateX(10px) rotate(-1.2deg); cursor: grabbing; position: relative; z-index: 1; }
+  .order-item.dragging .grip { color: var(--accent); }
+  .drop-slot { height: 40px; border: 1.5px dashed var(--accent); border-radius: var(--radius-sm); background: var(--accent-soft); }
+  .toggle { width: 30px; height: 18px; border-radius: 99px; background: var(--accent); position: relative; flex: none; }
+  .toggle::after { content: ""; position: absolute; top: 2px; left: 14px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: var(--shadow-sm); }
+  .toggle.off { background: var(--border-strong); }
+  .toggle.off::after { left: 2px; }
+  .note { font-size: var(--text-xs); color: var(--muted); }
+
+  .preview { background: var(--canvas); display: flex; flex-direction: column; min-height: 0; }
+  .preview-bar { height: 48px; flex: none; display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-4); background: var(--surface); border-bottom: 1px solid var(--border); }
+  .preview-bar .seg { display: inline-grid; }
+  .zoom span { font-size: var(--text-xs); min-width: 42px; text-align: center; color: var(--muted); display: inline-block; }
+  .stage { flex: 1; overflow: auto; padding: var(--space-8) 0 var(--space-12); display: flex; flex-direction: column; align-items: center; gap: var(--space-5); }
+
+  .page { --page-w: 560px; width: var(--page-w); aspect-ratio: 210 / 297; flex: none; background: var(--page); box-shadow: var(--page-shadow); padding: 7% 8%; font-family: var(--cv-font); color: var(--cv-text); font-size: calc(var(--page-w) / 62); line-height: 1.45; overflow: hidden; }
+  .page.next { aspect-ratio: auto; height: 120px; overflow: hidden; -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); }
+  .page h1 { font-size: 2.4em; font-weight: 700; letter-spacing: -.01em; line-height: 1.1; }
+  .page .cv-role { color: var(--cv-primary); font-weight: 600; font-size: 1.15em; margin-top: .2em; }
+  .page .cv-contact { color: var(--cv-muted); margin-top: .6em; }
+  .page section { margin-top: 1.5em; }
+  .page h2 { font-size: .95em; text-transform: uppercase; letter-spacing: .08em; color: var(--cv-primary); border-bottom: 1px solid var(--cv-rule); padding-bottom: .25em; margin-bottom: .6em; }
+  .page .job + .job { margin-top: .9em; }
+  .page .job-head { display: flex; justify-content: space-between; gap: 1em; }
+  .page .job-head b { font-weight: 600; }
+  .page .job-head span, .page .job-org { color: var(--cv-muted); }
+  .page ul { padding-left: 1.2em; margin-top: .3em; }
+  .page li + li { margin-top: .15em; }
+  .page-num { font-size: var(--text-xs); color: var(--faint); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="chev-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="chev-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+  <symbol id="minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+  <symbol id="rotate" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="logo"><span class="logo-mark">R</span>Resumely</div>
+  <span class="vsep"></span>
+  <a class="back" href="editor.html"><svg class="i"><use href="#chev-left"/></svg>Back to editor</a>
+  <div class="spacer"></div>
+  <button class="btn ghost icon" data-toggle-theme aria-label="Toggle dark mode"><svg class="i"><use href="#moon"/></svg></button>
+  <button class="btn primary"><svg class="i"><use href="#download"/></svg>Download PDF</button>
+</header>
+
+<div class="workspace">
+  <aside class="panel" aria-label="Template customization">
+    <div class="panel-head"><h1>Customize</h1><button class="btn ghost sm reset"><svg class="i" style="width:13px;height:13px"><use href="#rotate"/></svg>Reset to template defaults</button></div>
+
+    <div class="group">
+      <h2>Template</h2>
+      <div class="templates">
+        <div class="tpl"><div class="thumb"><div class="ln h"></div><div class="ln s"></div><div class="ln"></div><div class="ln m"></div><div class="ln"></div><div class="ln s"></div></div><span>Professional</span></div>
+        <div class="tpl on"><div class="thumb"><div class="ln h"></div><div class="ln c s"></div><div class="ln"></div><div class="ln m"></div><div class="ln c s"></div><div class="ln"></div></div><span>Modern</span></div>
+        <div class="tpl"><div class="thumb center"><div class="ln h"></div><div class="ln s"></div><div class="ln"></div><div class="ln m"></div><div class="ln"></div><div class="ln m"></div></div><span>Executive</span></div>
+        <div class="tpl"><div class="thumb split"><div class="side"><div class="ln c"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div></div><div class="main"><div class="ln h"></div><div class="ln"></div><div class="ln m"></div><div class="ln"></div></div></div><span>Developer</span></div>
+        <div class="tpl"><div class="thumb"><div class="ln h" style="width:45%"></div><div class="ln s"></div><div class="ln m"></div><div class="ln s"></div><div class="ln m"></div></div><span>Minimal</span></div>
+        <div class="tpl"><div class="thumb" style="gap:3%"><div class="ln h"></div><div class="ln"></div><div class="ln"></div><div class="ln m"></div><div class="ln"></div><div class="ln"></div><div class="ln m"></div><div class="ln"></div></div><span>Compact</span></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Typography</h2>
+      <div class="field"><div class="row"><label>Font family</label></div><div class="select"><span>Geist<em>ATS-safe</em></span><svg class="i"><use href="#chev-down"/></svg></div></div>
+      <div class="field">
+        <div class="row"><label>Font size</label><span class="val">10.5 pt</span></div>
+        <div class="slider"><div class="track"></div><div class="fill" style="width:45%"></div><div class="thumb-dot" style="left:45%"></div></div>
+      </div>
+      <div class="field">
+        <div class="row"><label>Line height</label><span class="val">1.45</span></div>
+        <div class="slider"><div class="track"></div><div class="fill" style="width:55%"></div><div class="thumb-dot" style="left:55%"></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Colors</h2>
+      <div class="field">
+        <div class="row"><label>Primary</label></div>
+        <div class="swatches">
+          <span class="sw on" style="background:#2f3b8f" title="Indigo"></span>
+          <span class="sw" style="background:#1f6f8b" title="Teal"></span>
+          <span class="sw" style="background:#2f6b45" title="Forest"></span>
+          <span class="sw" style="background:#8a3a3a" title="Burgundy"></span>
+          <span class="sw" style="background:#2b2b33" title="Charcoal"></span>
+          <span class="hex"><i></i>#2F3B8F</span>
+        </div>
+      </div>
+      <div class="field">
+        <div class="row"><label>Text</label></div>
+        <div class="swatches">
+          <span class="sw on" style="background:#1d1d22" title="Ink"></span>
+          <span class="sw" style="background:#33363f" title="Graphite"></span>
+          <span class="sw" style="background:#000000" title="Black"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Page</h2>
+      <div class="field"><div class="row"><label>Page size</label></div><div class="seg"><span class="on">A4<small>210 x 297 mm</small></span><span>US Letter<small>8.5 x 11 in</small></span></div></div>
+      <div class="field"><div class="row"><label>Margins</label><span class="val">18 mm</span></div><div class="seg"><span>Narrow</span><span class="on">Normal</span><span>Wide</span></div></div>
+      <div class="field">
+        <div class="row"><label>Section spacing</label><span class="val">16 px</span></div>
+        <div class="slider"><div class="track"></div><div class="fill" style="width:40%"></div><div class="thumb-dot" style="left:40%"></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Section order</h2>
+      <p class="note">Drag to reorder. Turn a section off to hide it from the CV without deleting it.</p>
+      <div class="order">
+        <div class="order-item locked"><span class="grip"><svg class="i"><use href="#lock"/></svg></span><span class="name">Header and contact</span></div>
+        <div class="order-item"><span class="grip"><svg class="i"><use href="#grip"/></svg></span><span class="name">Summary</span><span class="toggle"></span></div>
+        <div class="order-item"><span class="grip"><svg class="i"><use href="#grip"/></svg></span><span class="name">Experience</span><span class="toggle"></span></div>
+        <div class="order-item dragging"><span class="grip"><svg class="i"><use href="#grip"/></svg></span><span class="name">Skills</span><span class="toggle"></span></div>
+        <div class="drop-slot" aria-hidden="true"></div>
+        <div class="order-item"><span class="grip"><svg class="i"><use href="#grip"/></svg></span><span class="name">Education</span><span class="toggle"></span></div>
+        <div class="order-item"><span class="grip"><svg class="i"><use href="#grip"/></svg></span><span class="name">Certifications</span><span class="toggle"></span></div>
+        <div class="order-item"><span class="grip"><svg class="i"><use href="#grip"/></svg></span><span class="name">Languages</span><span class="toggle"></span></div>
+        <div class="order-item off"><span class="grip"><svg class="i"><use href="#grip"/></svg></span><span class="name">Projects</span><span class="toggle off"></span></div>
+      </div>
+    </div>
+  </aside>
+
+  <section class="preview" aria-label="Live preview">
+    <div class="preview-bar">
+      <span class="note">Changes apply instantly</span>
+      <div class="spacer"></div>
+      <button class="btn ghost sm icon" aria-label="Zoom out"><svg class="i"><use href="#minus"/></svg></button>
+      <span class="mono zoom"><span>100%</span></span>
+      <button class="btn ghost sm icon" aria-label="Zoom in"><svg class="i"><use href="#plus"/></svg></button>
+    </div>
+    <div class="stage">
+      <article class="page">
+        <header>
+          <h1>Amira Haddad</h1>
+          <p class="cv-role">Senior Product Designer</p>
+          <p class="cv-contact">amira.haddad@mail.com | +351 912 345 678 | Lisbon, Portugal | linkedin.com/in/amirahaddad | amirahaddad.design</p>
+        </header>
+        <section>
+          <h2>Summary</h2>
+          <p>Product designer with 7 years of experience shaping healthcare and productivity products. Combines research, interaction design, and design systems to ship measurable improvements for patients and clinicians.</p>
+        </section>
+        <section>
+          <h2>Experience</h2>
+          <div class="job">
+            <div class="job-head"><b>Senior Product Designer</b><span>Mar 2022 - Present</span></div>
+            <div class="job-org">Northwind Health, Lisbon, Portugal (hybrid)</div>
+            <ul>
+              <li>Led the redesign of the patient booking flow, lifting completed appointments by 23% in two quarters.</li>
+              <li>Built and maintained a 120-component design system used by 4 product teams.</li>
+              <li>Mentored 3 designers and introduced weekly critique, cutting review cycles from 5 days to 2.</li>
+            </ul>
+          </div>
+          <div class="job">
+            <div class="job-head"><b>Product Designer</b><span>Jun 2019 - Feb 2022</span></div>
+            <div class="job-org">Fieldnote, Remote</div>
+            <ul>
+              <li>Designed collaborative note-taking features adopted by 40,000 weekly active users.</li>
+              <li>Ran 60+ usability sessions and turned findings into a prioritized research backlog.</li>
+              <li>Partnered with engineering to cut onboarding from 7 steps to 3, raising activation by 18%.</li>
+              <li>Introduced accessibility reviews, bringing core flows to WCAG 2.1 AA.</li>
+            </ul>
+          </div>
+        </section>
+        <section>
+          <h2>Education</h2>
+          <div class="job-head"><b>MSc Design for Interaction</b><span>2017 - 2019</span></div>
+          <div class="job-org">Delft University of Technology</div>
+        </section>
+        <section>
+          <h2>Skills</h2>
+          <p><b>Design:</b> Interaction design, prototyping, design systems, usability testing, information architecture</p>
+          <p><b>Tools:</b> Figma, FigJam, Maze, Dovetail, HTML and CSS</p>
+        </section>
+        <section>
+          <h2>Certifications</h2>
+          <div class="job-head"><b>Certified Usability Analyst, Human Factors International</b><span>2021</span></div>
+          <div class="job-head"><b>Google UX Design Certificate</b><span>2019</span></div>
+        </section>
+      </article>
+      <span class="page-num mono">Page 1 of 2</span>
+      <article class="page next">
+        <section style="margin-top:0">
+          <h2>Languages</h2>
+          <p>Arabic (native) | English (C2, professional) | Portuguese (B2)</p>
+        </section>
+      </article>
+    </div>
+  </section>
+</div>
+<script>
+  const root = document.documentElement;
+  document.querySelector("[data-toggle-theme]").onclick = () => {
+    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+  };
+</script>
+</body>
+</html>
