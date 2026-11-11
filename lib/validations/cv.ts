@@ -46,6 +46,9 @@ const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
 const shortText = z.string().max(SHORT_TEXT_MAX);
 const longText = z.string().max(LONG_TEXT_MAX);
+
+export const shortTextSchema = shortText;
+export const longTextSchema = longText;
 const bulletList = z.array(z.string().max(BULLET_MAX)).max(LIST_MAX);
 const shortTextList = z.array(shortText).max(LIST_MAX);
 const id = z.string().min(1).max(ID_MAX);
