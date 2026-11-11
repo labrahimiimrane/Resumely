@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { FileText } from "lucide-react";
+import { EducationSection } from "@/components/editor/education-section";
+import { ExperienceSection } from "@/components/editor/experience-section";
 import { PersonalSection } from "@/components/editor/personal-section";
 import { SummarySection } from "@/components/editor/summary-section";
 import type { EditorSection } from "@/lib/cv/sections";
@@ -35,6 +37,10 @@ export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
         <PersonalSection />
       ) : section.id === "summary" ? (
         <SummarySection />
+      ) : section.id === "experience" ? (
+        <ExperienceSection />
+      ) : section.id === "education" ? (
+        <EducationSection />
       ) : (
         <div className="flex flex-col items-center gap-2 rounded-[10px] border border-dashed border-input bg-card px-6 py-12 text-center">
           <FileText aria-hidden="true" className="size-6 text-faint" />

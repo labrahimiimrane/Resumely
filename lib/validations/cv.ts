@@ -35,7 +35,7 @@ export const FONT_FAMILIES = ["geist", "inter", "georgia", "arial"] as const;
 
 export const PAGE_SIZES = ["A4", "Letter"] as const;
 
-const CV_DATE_PATTERN = /^(\d{4}(-(0[1-9]|1[0-2]))?)?$/;
+export const CV_DATE_PATTERN = /^(\d{4}(-(0[1-9]|1[0-2]))?)?$/;
 const URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 const SAFE_URL_SCHEME_PATTERN = /^https?:/i;
 // Browsers ignore whitespace and control characters inside schemes, so

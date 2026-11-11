@@ -19,8 +19,9 @@ export function useSyncValidFields<T extends FieldValues>(
 
   useEffect(() => {
     const subscription = form.watch((values, { name }) => {
-      if (!name || !(name in schema.shape)) return;
-      const key = name as keyof T & string;
+      const topLevel = name?.split(".")[0];
+      if (!topLevel || !(topLevel in schema.shape)) return;
+      const key = topLevel as keyof T & string;
       const result = schema.shape[key].safeParse(values[key]);
       if (result.success) {
         onValidRef.current({ [key]: result.data } as Partial<T>);
