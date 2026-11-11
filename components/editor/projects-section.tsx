@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EntryList } from "@/components/editor/entry-list";
@@ -15,7 +14,7 @@ import { projectFormSchema, type ProjectFormValues } from "@/lib/validations/for
 import type { ProjectEntry } from "@/types/cv";
 
 export function ProjectsSection() {
-  const { cv, updateCv } = useCv();
+  const { cv, updateCv, revision } = useCv();
   const actions = useEntryListActions("projects", "name");
 
   return (
@@ -26,7 +25,7 @@ export function ProjectsSection() {
       deleteTitle="Delete this project?"
       emptyMessage="No projects added yet."
       renderSummary={(project) => ({ title: project.name.trim(), subtitle: project.technologies.join(", ") })}
-      renderForm={(project) => <ProjectForm key={project.id} project={project} />}
+      renderForm={(project) => <ProjectForm key={`${project.id}:${revision}`} project={project} />}
       onAdd={() => {
         const project = createProjectEntry();
         updateCv((current) => ({ ...current, projects: [...current.projects, project] }));
@@ -40,7 +39,6 @@ export function ProjectsSection() {
 }
 
 function ProjectForm({ project }: { project: ProjectEntry }) {
-  const { updateCv } = useCv();
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
     mode: "onChange",
@@ -54,15 +52,15 @@ function ProjectForm({ project }: { project: ProjectEntry }) {
   });
   const { errors } = form.formState;
 
-  const applyFields = useCallback(
-    (fields: Partial<ProjectFormValues>) =>
-      updateCv((cv) => ({
-        ...cv,
-        projects: cv.projects.map((item) => (item.id === project.id ? { ...item, ...fields } : item)),
-      })),
-    [project.id, updateCv],
+  useSyncValidFields(
+    form,
+    projectFormSchema,
+    (cv, fields: Partial<ProjectFormValues>) => ({
+      ...cv,
+      projects: cv.projects.map((item) => (item.id === project.id ? { ...item, ...fields } : item)),
+    }),
+    project.id,
   );
-  useSyncValidFields(form, projectFormSchema, applyFields);
 
   const urlField = (key: "projectUrl" | "githubUrl") => ({
     ...form.register(key),

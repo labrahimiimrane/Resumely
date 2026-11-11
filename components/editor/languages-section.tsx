@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EntryList } from "@/components/editor/entry-list";
@@ -14,7 +13,7 @@ import { languageFormSchema, type LanguageFormValues } from "@/lib/validations/f
 import type { LanguageEntry } from "@/types/cv";
 
 export function LanguagesSection() {
-  const { cv, updateCv } = useCv();
+  const { cv, updateCv, revision } = useCv();
   const actions = useEntryListActions("languages", "language");
 
   return (
@@ -25,7 +24,7 @@ export function LanguagesSection() {
       deleteTitle="Delete this language?"
       emptyMessage="No languages added yet."
       renderSummary={(item) => ({ title: item.language.trim(), subtitle: item.proficiency.trim() })}
-      renderForm={(item) => <LanguageForm key={item.id} language={item} />}
+      renderForm={(item) => <LanguageForm key={`${item.id}:${revision}`} language={item} />}
       onAdd={() => {
         const item = createLanguageEntry();
         updateCv((current) => ({ ...current, languages: [...current.languages, item] }));
@@ -39,7 +38,6 @@ export function LanguagesSection() {
 }
 
 function LanguageForm({ language }: { language: LanguageEntry }) {
-  const { updateCv } = useCv();
   const form = useForm<LanguageFormValues>({
     resolver: zodResolver(languageFormSchema),
     mode: "onChange",
@@ -47,15 +45,15 @@ function LanguageForm({ language }: { language: LanguageEntry }) {
   });
   const { errors } = form.formState;
 
-  const applyFields = useCallback(
-    (fields: Partial<LanguageFormValues>) =>
-      updateCv((cv) => ({
-        ...cv,
-        languages: cv.languages.map((item) => (item.id === language.id ? { ...item, ...fields } : item)),
-      })),
-    [language.id, updateCv],
+  useSyncValidFields(
+    form,
+    languageFormSchema,
+    (cv, fields: Partial<LanguageFormValues>) => ({
+      ...cv,
+      languages: cv.languages.map((item) => (item.id === language.id ? { ...item, ...fields } : item)),
+    }),
+    language.id,
   );
-  useSyncValidFields(form, languageFormSchema, applyFields);
 
   return (
     <form noValidate onSubmit={(event) => event.preventDefault()} className="grid gap-4 sm:grid-cols-2">

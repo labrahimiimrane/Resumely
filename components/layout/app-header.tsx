@@ -1,6 +1,7 @@
 "use client";
 
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { UndoRedoControls } from "@/components/layout/undo-redo-controls";
 import { useCv } from "@/hooks/use-cv";
 import { getCvDisplayName } from "@/lib/cv/document";
 
@@ -23,6 +24,8 @@ export function AppHeader() {
         {getCvDisplayName(cv)}
       </p>
       <div className="flex-1" />
+      <UndoRedoControls />
+      <span aria-hidden="true" className="h-[22px] w-px bg-border" />
       <ThemeToggle />
     </header>
   );

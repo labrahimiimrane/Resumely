@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BulletListField } from "@/components/editor/bullet-list-field";
@@ -17,7 +16,7 @@ import { experienceFormSchema, type ExperienceFormValues } from "@/lib/validatio
 import type { ExperienceEntry } from "@/types/cv";
 
 export function ExperienceSection() {
-  const { cv, updateCv } = useCv();
+  const { cv, updateCv, revision } = useCv();
   const actions = useEntryListActions("experience", "jobTitle");
 
   return (
@@ -30,7 +29,7 @@ export function ExperienceSection() {
         title: [entry.jobTitle, entry.company].filter((part) => part.trim()).join(", "),
         subtitle: formatCvDateRange(entry.startDate, entry.endDate, entry.current),
       })}
-      renderForm={(entry) => <ExperienceForm key={entry.id} entry={entry} />}
+      renderForm={(entry) => <ExperienceForm key={`${entry.id}:${revision}`} entry={entry} />}
       onAdd={() => {
         const entry = createExperienceEntry();
         updateCv((current) => ({ ...current, experience: [...current.experience, entry] }));
@@ -44,7 +43,6 @@ export function ExperienceSection() {
 }
 
 function ExperienceForm({ entry }: { entry: ExperienceEntry }) {
-  const { updateCv } = useCv();
   const form = useForm<ExperienceFormValues>({
     resolver: zodResolver(experienceFormSchema),
     mode: "onChange",
@@ -67,15 +65,15 @@ function ExperienceForm({ entry }: { entry: ExperienceEntry }) {
   const showOrderWarning = !current && !errors.startDate && !errors.endDate && isEndBeforeStart(startDate, endDate);
   const warningId = `${entry.id}-date-order`;
 
-  const applyFields = useCallback(
-    (fields: Partial<ExperienceFormValues>) =>
-      updateCv((cv) => ({
-        ...cv,
-        experience: cv.experience.map((item) => (item.id === entry.id ? { ...item, ...fields } : item)),
-      })),
-    [entry.id, updateCv],
+  useSyncValidFields(
+    form,
+    experienceFormSchema,
+    (cv, fields: Partial<ExperienceFormValues>) => ({
+      ...cv,
+      experience: cv.experience.map((item) => (item.id === entry.id ? { ...item, ...fields } : item)),
+    }),
+    entry.id,
   );
-  useSyncValidFields(form, experienceFormSchema, applyFields);
 
   const field = (key: "jobTitle" | "company" | "location") => ({
     ...form.register(key),

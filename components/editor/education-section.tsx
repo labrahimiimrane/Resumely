@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DateField } from "@/components/editor/date-field";
@@ -16,7 +15,7 @@ import { educationFormSchema, type EducationFormValues } from "@/lib/validations
 import type { EducationEntry } from "@/types/cv";
 
 export function EducationSection() {
-  const { cv, updateCv } = useCv();
+  const { cv, updateCv, revision } = useCv();
   const actions = useEntryListActions("education", "degree");
 
   return (
@@ -29,7 +28,7 @@ export function EducationSection() {
         title: [entry.degree, entry.institution].filter((part) => part.trim()).join(", "),
         subtitle: formatCvDateRange(entry.startDate, entry.endDate, false),
       })}
-      renderForm={(entry) => <EducationForm key={entry.id} entry={entry} />}
+      renderForm={(entry) => <EducationForm key={`${entry.id}:${revision}`} entry={entry} />}
       onAdd={() => {
         const entry = createEducationEntry();
         updateCv((current) => ({ ...current, education: [...current.education, entry] }));
@@ -43,7 +42,6 @@ export function EducationSection() {
 }
 
 function EducationForm({ entry }: { entry: EducationEntry }) {
-  const { updateCv } = useCv();
   const form = useForm<EducationFormValues>({
     resolver: zodResolver(educationFormSchema),
     mode: "onChange",
@@ -61,15 +59,15 @@ function EducationForm({ entry }: { entry: EducationEntry }) {
   const showOrderWarning = !errors.startDate && !errors.endDate && isEndBeforeStart(startDate, endDate);
   const warningId = `${entry.id}-date-order`;
 
-  const applyFields = useCallback(
-    (fields: Partial<EducationFormValues>) =>
-      updateCv((cv) => ({
-        ...cv,
-        education: cv.education.map((item) => (item.id === entry.id ? { ...item, ...fields } : item)),
-      })),
-    [entry.id, updateCv],
+  useSyncValidFields(
+    form,
+    educationFormSchema,
+    (cv, fields: Partial<EducationFormValues>) => ({
+      ...cv,
+      education: cv.education.map((item) => (item.id === entry.id ? { ...item, ...fields } : item)),
+    }),
+    entry.id,
   );
-  useSyncValidFields(form, educationFormSchema, applyFields);
 
   const field = (key: "institution" | "degree" | "fieldOfStudy") => ({
     ...form.register(key),

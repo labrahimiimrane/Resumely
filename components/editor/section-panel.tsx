@@ -28,6 +28,9 @@ const SECTION_FORMS: Record<EditorSectionId, ComponentType> = {
   custom: CustomSectionsSection,
 };
 
+// Single-form sections remount on undo/redo; list sections keep their card state and remount each entry form instead.
+const STATIC_SECTIONS = new Set<EditorSectionId>(["personal", "summary"]);
+
 type SectionPanelProps = {
   section: EditorSection;
   focusOnChange: boolean;
@@ -36,7 +39,7 @@ type SectionPanelProps = {
 export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const SectionForm = SECTION_FORMS[section.id];
-  const { cv, updateCv } = useCv();
+  const { cv, updateCv, revision } = useCv();
   const sectionKey = section.sectionKey;
   const shown = sectionKey ? (cv.sections.find((item) => item.key === sectionKey)?.enabled ?? true) : true;
   const switchId = `section-${section.id}-visible`;
@@ -78,7 +81,7 @@ export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
           </div>
         ) : null}
       </div>
-      <SectionForm key={section.id} />
+      <SectionForm key={STATIC_SECTIONS.has(section.id) ? `${section.id}:${revision}` : section.id} />
     </section>
   );
 }

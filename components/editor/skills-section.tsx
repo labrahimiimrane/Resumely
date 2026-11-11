@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EntryList } from "@/components/editor/entry-list";
@@ -20,7 +19,7 @@ function skillsPreview(skills: string[]): string {
 }
 
 export function SkillsSection() {
-  const { cv, updateCv } = useCv();
+  const { cv, updateCv, revision } = useCv();
   const actions = useEntryListActions("skills", "name");
 
   return (
@@ -31,7 +30,7 @@ export function SkillsSection() {
       deleteTitle="Delete this skill group?"
       emptyMessage="No skills added yet."
       renderSummary={(group) => ({ title: group.name.trim(), subtitle: skillsPreview(group.skills) })}
-      renderForm={(group) => <SkillGroupForm key={group.id} group={group} />}
+      renderForm={(group) => <SkillGroupForm key={`${group.id}:${revision}`} group={group} />}
       onAdd={() => {
         const group = createSkillGroup();
         updateCv((current) => ({ ...current, skills: [...current.skills, group] }));
@@ -43,22 +42,21 @@ export function SkillsSection() {
 }
 
 function SkillGroupForm({ group }: { group: SkillGroup }) {
-  const { updateCv } = useCv();
   const form = useForm<SkillGroupFormValues>({
     resolver: zodResolver(skillGroupFormSchema),
     mode: "onChange",
     defaultValues: { name: group.name, skills: group.skills },
   });
 
-  const applyFields = useCallback(
-    (fields: Partial<SkillGroupFormValues>) =>
-      updateCv((cv) => ({
-        ...cv,
-        skills: cv.skills.map((item) => (item.id === group.id ? { ...item, ...fields } : item)),
-      })),
-    [group.id, updateCv],
+  useSyncValidFields(
+    form,
+    skillGroupFormSchema,
+    (cv, fields: Partial<SkillGroupFormValues>) => ({
+      ...cv,
+      skills: cv.skills.map((item) => (item.id === group.id ? { ...item, ...fields } : item)),
+    }),
+    group.id,
   );
-  useSyncValidFields(form, skillGroupFormSchema, applyFields);
 
   return (
     <form noValidate onSubmit={(event) => event.preventDefault()} className="flex flex-col gap-5">

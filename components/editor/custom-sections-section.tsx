@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EntryList } from "@/components/editor/entry-list";
@@ -28,7 +27,7 @@ function firstLine(content: string): string {
 }
 
 export function CustomSectionsSection() {
-  const { cv, updateCv } = useCv();
+  const { cv, updateCv, revision } = useCv();
 
   return (
     <EntryList
@@ -49,7 +48,7 @@ export function CustomSectionsSection() {
       deleteTitle="Delete this custom section?"
       emptyMessage="No custom sections yet. Add one for volunteering, awards, or publications."
       renderSummary={(section) => ({ title: section.title.trim(), subtitle: firstLine(section.content) })}
-      renderForm={(section) => <CustomSectionForm key={section.id} section={section} />}
+      renderForm={(section) => <CustomSectionForm key={`${section.id}:${revision}`} section={section} />}
       onAdd={() => {
         const section = createCustomSection();
         updateCv((current) => addCustomSection(current, section));
@@ -61,7 +60,6 @@ export function CustomSectionsSection() {
 }
 
 function CustomSectionForm({ section }: { section: CustomSection }) {
-  const { updateCv } = useCv();
   const form = useForm<CustomSectionFormValues>({
     resolver: zodResolver(customSectionFormSchema),
     mode: "onChange",
@@ -69,15 +67,15 @@ function CustomSectionForm({ section }: { section: CustomSection }) {
   });
   const { errors } = form.formState;
 
-  const applyFields = useCallback(
-    (fields: Partial<CustomSectionFormValues>) =>
-      updateCv((cv) => ({
-        ...cv,
-        customSections: cv.customSections.map((item) => (item.id === section.id ? { ...item, ...fields } : item)),
-      })),
-    [section.id, updateCv],
+  useSyncValidFields(
+    form,
+    customSectionFormSchema,
+    (cv, fields: Partial<CustomSectionFormValues>) => ({
+      ...cv,
+      customSections: cv.customSections.map((item) => (item.id === section.id ? { ...item, ...fields } : item)),
+    }),
+    section.id,
   );
-  useSyncValidFields(form, customSectionFormSchema, applyFields);
 
   return (
     <form noValidate onSubmit={(event) => event.preventDefault()} className="flex flex-col gap-5">

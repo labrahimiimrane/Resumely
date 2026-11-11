@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TextAreaField } from "@/components/editor/text-field";
@@ -10,7 +9,7 @@ import { LONG_TEXT_MAX } from "@/lib/validations/cv";
 import { summaryFormSchema, type SummaryFormValues } from "@/lib/validations/forms";
 
 export function SummarySection() {
-  const { cv, updateCv } = useCv();
+  const { cv } = useCv();
   const form = useForm<SummaryFormValues>({
     resolver: zodResolver(summaryFormSchema),
     mode: "onChange",
@@ -18,12 +17,12 @@ export function SummarySection() {
   });
   const summary = useWatch({ control: form.control, name: "summary" });
 
-  const applyFields = useCallback(
-    (fields: Partial<SummaryFormValues>) =>
-      updateCv((current) => ({ ...current, summary: fields.summary ?? current.summary })),
-    [updateCv],
+  useSyncValidFields(
+    form,
+    summaryFormSchema,
+    (current, fields: Partial<SummaryFormValues>) => ({ ...current, summary: fields.summary ?? current.summary }),
+    "summary",
   );
-  useSyncValidFields(form, summaryFormSchema, applyFields);
 
   return (
     <form

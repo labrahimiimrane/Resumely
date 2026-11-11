@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PhotoField } from "@/components/editor/photo-field";
@@ -12,7 +11,7 @@ import { SHORT_TEXT_MAX, URL_MAX } from "@/lib/validations/cv";
 import { personalFormSchema, type PersonalFormValues } from "@/lib/validations/forms";
 
 export function PersonalSection() {
-  const { cv, updateCv } = useCv();
+  const { cv } = useCv();
   const form = useForm<PersonalFormValues>({
     resolver: zodResolver(personalFormSchema),
     mode: "onChange",
@@ -30,19 +29,19 @@ export function PersonalSection() {
   });
   const { errors } = form.formState;
 
-  const applyFields = useCallback(
-    (fields: Partial<PersonalFormValues>) =>
-      updateCv((current) => {
-        const { name, ...personal } = fields;
-        return {
-          ...current,
-          name: name ?? current.name,
-          personal: { ...current.personal, ...personal },
-        };
-      }),
-    [updateCv],
+  useSyncValidFields(
+    form,
+    personalFormSchema,
+    (current, fields: Partial<PersonalFormValues>) => {
+      const { name, ...personal } = fields;
+      return {
+        ...current,
+        name: name ?? current.name,
+        personal: { ...current.personal, ...personal },
+      };
+    },
+    "personal",
   );
-  useSyncValidFields(form, personalFormSchema, applyFields);
 
   const shortField = (key: Exclude<keyof PersonalFormValues, "linkedinUrl" | "portfolioUrl" | "githubUrl">) => ({
     ...form.register(key),

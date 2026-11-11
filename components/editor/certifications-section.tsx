@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DateField } from "@/components/editor/date-field";
@@ -16,7 +15,7 @@ import { certificationFormSchema, type CertificationFormValues } from "@/lib/val
 import type { CertificationEntry } from "@/types/cv";
 
 export function CertificationsSection() {
-  const { cv, updateCv } = useCv();
+  const { cv, updateCv, revision } = useCv();
   const actions = useEntryListActions("certifications", "name");
 
   return (
@@ -30,7 +29,7 @@ export function CertificationsSection() {
         title: item.name.trim(),
         subtitle: [item.issuer.trim(), formatCvDate(item.issueDate)].filter(Boolean).join(", "),
       })}
-      renderForm={(item) => <CertificationForm key={item.id} certification={item} />}
+      renderForm={(item) => <CertificationForm key={`${item.id}:${revision}`} certification={item} />}
       onAdd={() => {
         const item = createCertificationEntry();
         updateCv((current) => ({ ...current, certifications: [...current.certifications, item] }));
@@ -47,7 +46,6 @@ export function CertificationsSection() {
 }
 
 function CertificationForm({ certification }: { certification: CertificationEntry }) {
-  const { updateCv } = useCv();
   const form = useForm<CertificationFormValues>({
     resolver: zodResolver(certificationFormSchema),
     mode: "onChange",
@@ -60,17 +58,17 @@ function CertificationForm({ certification }: { certification: CertificationEntr
   });
   const { errors } = form.formState;
 
-  const applyFields = useCallback(
-    (fields: Partial<CertificationFormValues>) =>
-      updateCv((cv) => ({
-        ...cv,
-        certifications: cv.certifications.map((item) =>
-          item.id === certification.id ? { ...item, ...fields } : item,
-        ),
-      })),
-    [certification.id, updateCv],
+  useSyncValidFields(
+    form,
+    certificationFormSchema,
+    (cv, fields: Partial<CertificationFormValues>) => ({
+      ...cv,
+      certifications: cv.certifications.map((item) =>
+        item.id === certification.id ? { ...item, ...fields } : item,
+      ),
+    }),
+    certification.id,
   );
-  useSyncValidFields(form, certificationFormSchema, applyFields);
 
   return (
     <form noValidate onSubmit={(event) => event.preventDefault()} className="flex flex-col gap-5">
