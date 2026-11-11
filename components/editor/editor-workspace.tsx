@@ -4,12 +4,14 @@ import { useState } from "react";
 import { SectionPanel } from "@/components/editor/section-panel";
 import { AppHeader } from "@/components/layout/app-header";
 import { SectionNav } from "@/components/layout/section-nav";
+import { PreviewPanel, usePreviewVisible } from "@/components/preview/preview-panel";
 import { CvProvider } from "@/hooks/use-cv";
 import { EDITOR_SECTIONS, type EditorSectionId } from "@/lib/cv/sections";
 
 export function EditorWorkspace() {
   const [activeSection, setActiveSection] = useState<EditorSectionId>("personal");
   const [hasNavigated, setHasNavigated] = useState(false);
+  const previewVisible = usePreviewVisible();
   const section = EDITOR_SECTIONS.find((item) => item.id === activeSection) ?? EDITOR_SECTIONS[0];
 
   function selectSection(id: EditorSectionId) {
@@ -28,6 +30,7 @@ export function EditorWorkspace() {
               <SectionPanel section={section} focusOnChange={hasNavigated} />
             </div>
           </main>
+          {previewVisible ? <PreviewPanel /> : null}
         </div>
       </div>
     </CvProvider>
