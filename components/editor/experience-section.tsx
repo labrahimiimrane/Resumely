@@ -8,6 +8,7 @@ import { DateField } from "@/components/editor/date-field";
 import { EntryList } from "@/components/editor/entry-list";
 import { TextField } from "@/components/editor/text-field";
 import { useCv } from "@/hooks/use-cv";
+import { useEntryListActions } from "@/hooks/use-entry-list-actions";
 import { useSyncValidFields } from "@/hooks/use-sync-valid-fields";
 import { formatCvDateRange, isEndBeforeStart } from "@/lib/cv/dates";
 import { createExperienceEntry } from "@/lib/cv/document";
@@ -17,10 +18,12 @@ import type { ExperienceEntry } from "@/types/cv";
 
 export function ExperienceSection() {
   const { cv, updateCv } = useCv();
+  const actions = useEntryListActions("experience", "jobTitle");
 
   return (
     <EntryList
       entries={cv.experience}
+      {...actions}
       noun="experience"
       emptyMessage="No experience added yet."
       renderSummary={(entry) => ({

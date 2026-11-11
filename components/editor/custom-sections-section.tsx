@@ -7,8 +7,15 @@ import { EntryList } from "@/components/editor/entry-list";
 import { TextAreaField, TextField } from "@/components/editor/text-field";
 import { useCv } from "@/hooks/use-cv";
 import { useSyncValidFields } from "@/hooks/use-sync-valid-fields";
-import { addCustomSection, removeCustomSection } from "@/lib/cv/custom-sections";
-import { createCustomSection } from "@/lib/cv/document";
+import {
+  addCustomSection,
+  duplicateCustomSection,
+  moveCustomSection,
+  removeCustomSection,
+  setSectionEnabled,
+} from "@/lib/cv/custom-sections";
+import { createCustomSection, createId } from "@/lib/cv/document";
+import { CUSTOM_SECTION_PREFIX } from "@/lib/validations/cv";
 import { LONG_TEXT_MAX, SHORT_TEXT_MAX } from "@/lib/validations/cv";
 import { customSectionFormSchema, type CustomSectionFormValues } from "@/lib/validations/forms";
 import type { CustomSection } from "@/types/cv";
@@ -26,6 +33,18 @@ export function CustomSectionsSection() {
   return (
     <EntryList
       entries={cv.customSections}
+      isEnabled={(section) =>
+        cv.sections.find((item) => item.key === `${CUSTOM_SECTION_PREFIX}${section.id}`)?.enabled ?? true
+      }
+      onToggle={(id, enabled) =>
+        updateCv((current) => setSectionEnabled(current, `${CUSTOM_SECTION_PREFIX}${id}`, enabled))
+      }
+      onDuplicate={(id) => {
+        const newId = createId();
+        updateCv((current) => duplicateCustomSection(current, id, newId));
+        return newId;
+      }}
+      onMove={(from, to) => updateCv((current) => moveCustomSection(current, from, to))}
       noun="custom section"
       deleteTitle="Delete this custom section?"
       emptyMessage="No custom sections yet. Add one for volunteering, awards, or publications."

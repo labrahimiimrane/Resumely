@@ -7,6 +7,7 @@ import { EntryList } from "@/components/editor/entry-list";
 import { TagInputField } from "@/components/editor/tag-input-field";
 import { TextField } from "@/components/editor/text-field";
 import { useCv } from "@/hooks/use-cv";
+import { useEntryListActions } from "@/hooks/use-entry-list-actions";
 import { useSyncValidFields } from "@/hooks/use-sync-valid-fields";
 import { createSkillGroup } from "@/lib/cv/document";
 import { SHORT_TEXT_MAX } from "@/lib/validations/cv";
@@ -20,10 +21,12 @@ function skillsPreview(skills: string[]): string {
 
 export function SkillsSection() {
   const { cv, updateCv } = useCv();
+  const actions = useEntryListActions("skills", "name");
 
   return (
     <EntryList
       entries={cv.skills}
+      {...actions}
       noun="skill group"
       deleteTitle="Delete this skill group?"
       emptyMessage="No skills added yet."

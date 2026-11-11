@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EntryList } from "@/components/editor/entry-list";
 import { TextField } from "@/components/editor/text-field";
 import { useCv } from "@/hooks/use-cv";
+import { useEntryListActions } from "@/hooks/use-entry-list-actions";
 import { useSyncValidFields } from "@/hooks/use-sync-valid-fields";
 import { createLanguageEntry } from "@/lib/cv/document";
 import { SHORT_TEXT_MAX } from "@/lib/validations/cv";
@@ -14,10 +15,12 @@ import type { LanguageEntry } from "@/types/cv";
 
 export function LanguagesSection() {
   const { cv, updateCv } = useCv();
+  const actions = useEntryListActions("languages", "language");
 
   return (
     <EntryList
       entries={cv.languages}
+      {...actions}
       noun="language"
       deleteTitle="Delete this language?"
       emptyMessage="No languages added yet."

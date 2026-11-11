@@ -7,6 +7,7 @@ import { DateField } from "@/components/editor/date-field";
 import { EntryList } from "@/components/editor/entry-list";
 import { TextAreaField, TextField } from "@/components/editor/text-field";
 import { useCv } from "@/hooks/use-cv";
+import { useEntryListActions } from "@/hooks/use-entry-list-actions";
 import { useSyncValidFields } from "@/hooks/use-sync-valid-fields";
 import { formatCvDateRange, isEndBeforeStart } from "@/lib/cv/dates";
 import { createEducationEntry } from "@/lib/cv/document";
@@ -16,10 +17,12 @@ import type { EducationEntry } from "@/types/cv";
 
 export function EducationSection() {
   const { cv, updateCv } = useCv();
+  const actions = useEntryListActions("education", "degree");
 
   return (
     <EntryList
       entries={cv.education}
+      {...actions}
       noun="education"
       emptyMessage="No education added yet."
       renderSummary={(entry) => ({

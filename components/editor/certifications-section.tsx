@@ -7,6 +7,7 @@ import { DateField } from "@/components/editor/date-field";
 import { EntryList } from "@/components/editor/entry-list";
 import { TextField } from "@/components/editor/text-field";
 import { useCv } from "@/hooks/use-cv";
+import { useEntryListActions } from "@/hooks/use-entry-list-actions";
 import { useSyncValidFields } from "@/hooks/use-sync-valid-fields";
 import { formatCvDate } from "@/lib/cv/dates";
 import { createCertificationEntry } from "@/lib/cv/document";
@@ -16,10 +17,12 @@ import type { CertificationEntry } from "@/types/cv";
 
 export function CertificationsSection() {
   const { cv, updateCv } = useCv();
+  const actions = useEntryListActions("certifications", "name");
 
   return (
     <EntryList
       entries={cv.certifications}
+      {...actions}
       noun="certification"
       deleteTitle="Delete this certification?"
       emptyMessage="No certifications added yet."

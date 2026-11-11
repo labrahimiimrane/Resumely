@@ -10,6 +10,10 @@ import { PersonalSection } from "@/components/editor/personal-section";
 import { ProjectsSection } from "@/components/editor/projects-section";
 import { SkillsSection } from "@/components/editor/skills-section";
 import { SummarySection } from "@/components/editor/summary-section";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useCv } from "@/hooks/use-cv";
+import { setSectionEnabled } from "@/lib/cv/custom-sections";
 import type { EditorSection, EditorSectionId } from "@/lib/cv/sections";
 
 const SECTION_FORMS: Record<EditorSectionId, ComponentType> = {
@@ -32,6 +36,10 @@ type SectionPanelProps = {
 export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const SectionForm = SECTION_FORMS[section.id];
+  const { cv, updateCv } = useCv();
+  const sectionKey = section.sectionKey;
+  const shown = sectionKey ? (cv.sections.find((item) => item.key === sectionKey)?.enabled ?? true) : true;
+  const switchId = `section-${section.id}-visible`;
 
   useEffect(() => {
     if (focusOnChange) headingRef.current?.focus();
@@ -39,16 +47,36 @@ export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
 
   return (
     <section aria-labelledby={`section-${section.id}-heading`} className="flex flex-col gap-4">
-      <div>
-        <h1
-          id={`section-${section.id}-heading`}
-          ref={headingRef}
-          tabIndex={-1}
-          className="rounded-sm text-[22px] font-semibold tracking-tight outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
-          {section.label}
-        </h1>
-        <p className="mt-1 text-[13px] text-muted-foreground">{section.description}</p>
+      <div className="flex items-start gap-4">
+        <div className="min-w-0 flex-1">
+          <h1
+            id={`section-${section.id}-heading`}
+            ref={headingRef}
+            tabIndex={-1}
+            className="rounded-sm text-[22px] font-semibold tracking-tight outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            {section.label}
+          </h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">{section.description}</p>
+          {!shown ? (
+            <p className="mt-1 text-[13px] font-medium text-muted-foreground">
+              Hidden from your CV. Your content is kept.
+            </p>
+          ) : null}
+        </div>
+        {sectionKey ? (
+          <div className="flex shrink-0 items-center gap-2 pt-1.5">
+            <Label htmlFor={switchId} className="text-[13px] font-normal text-muted-foreground">
+              Show on CV
+            </Label>
+            <Switch
+              id={switchId}
+              checked={shown}
+              aria-label={`Show ${section.label} on CV`}
+              onCheckedChange={(enabled) => updateCv((current) => setSectionEnabled(current, sectionKey, enabled))}
+            />
+          </div>
+        ) : null}
       </div>
       <SectionForm key={section.id} />
     </section>

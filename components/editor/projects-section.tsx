@@ -7,6 +7,7 @@ import { EntryList } from "@/components/editor/entry-list";
 import { TagInputField } from "@/components/editor/tag-input-field";
 import { TextAreaField, TextField } from "@/components/editor/text-field";
 import { useCv } from "@/hooks/use-cv";
+import { useEntryListActions } from "@/hooks/use-entry-list-actions";
 import { useSyncValidFields } from "@/hooks/use-sync-valid-fields";
 import { createProjectEntry } from "@/lib/cv/document";
 import { LONG_TEXT_MAX, SHORT_TEXT_MAX, URL_MAX } from "@/lib/validations/cv";
@@ -15,10 +16,12 @@ import type { ProjectEntry } from "@/types/cv";
 
 export function ProjectsSection() {
   const { cv, updateCv } = useCv();
+  const actions = useEntryListActions("projects", "name");
 
   return (
     <EntryList
       entries={cv.projects}
+      {...actions}
       noun="project"
       deleteTitle="Delete this project?"
       emptyMessage="No projects added yet."
