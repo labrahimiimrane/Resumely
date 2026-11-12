@@ -31,7 +31,13 @@ export function EditorWorkspace() {
   }
 
   return (
-    <CvProvider>
+    <CvProvider
+      fallback={
+        <div role="status" className="flex h-dvh items-center justify-center text-sm text-muted-foreground">
+          Loading your CV…
+        </div>
+      }
+    >
       <div className="flex h-dvh flex-col">
         <AppHeader onCustomize={() => setView("customize")} />
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
