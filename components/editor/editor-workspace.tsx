@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CustomizePanel } from "@/components/customize/customize-panel";
 import { SectionPanel } from "@/components/editor/section-panel";
 import { AppHeader } from "@/components/layout/app-header";
 import { SectionNav } from "@/components/layout/section-nav";
@@ -11,23 +12,34 @@ import { EDITOR_SECTIONS, type EditorSectionId } from "@/lib/cv/sections";
 export function EditorWorkspace() {
   const [activeSection, setActiveSection] = useState<EditorSectionId>("personal");
   const [hasNavigated, setHasNavigated] = useState(false);
+  const [view, setView] = useState<"editor" | "customize">("editor");
   const previewVisible = usePreviewVisible();
   const section = EDITOR_SECTIONS.find((item) => item.id === activeSection) ?? EDITOR_SECTIONS[0];
 
   function selectSection(id: EditorSectionId) {
     setActiveSection(id);
     setHasNavigated(true);
+    setView("editor");
+  }
+
+  function backToEditor() {
+    setHasNavigated(true);
+    setView("editor");
   }
 
   return (
     <CvProvider>
       <div className="flex h-dvh flex-col">
-        <AppHeader />
+        <AppHeader onCustomize={() => setView("customize")} />
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          <SectionNav activeSection={activeSection} onSelect={selectSection} />
+          <SectionNav activeSection={view === "editor" ? activeSection : null} onSelect={selectSection} />
           <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8">
             <div className="mx-auto max-w-[680px]">
-              <SectionPanel section={section} focusOnChange={hasNavigated} />
+              {view === "customize" ? (
+                <CustomizePanel onBack={backToEditor} />
+              ) : (
+                <SectionPanel section={section} focusOnChange={hasNavigated} />
+              )}
             </div>
           </main>
           {previewVisible ? <PreviewPanel /> : null}

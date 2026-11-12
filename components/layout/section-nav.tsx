@@ -22,7 +22,8 @@ function entryCount(cv: CvDocument, id: EditorSectionId): number {
 }
 
 type SectionNavProps = {
-  activeSection: EditorSectionId;
+  /** null while a non-section view (Customize) is open, so no item is marked current. */
+  activeSection: EditorSectionId | null;
   onSelect: (id: EditorSectionId) => void;
 };
 

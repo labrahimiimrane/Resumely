@@ -4,7 +4,7 @@ import type { PresentationSettings } from "@/types/cv";
 
 const FONT_STACKS: Record<PresentationSettings["fontFamily"], string> = {
   geist: "var(--font-geist-sans), Arial, sans-serif",
-  inter: "Inter, Arial, sans-serif",
+  inter: "var(--font-inter), Arial, sans-serif",
   georgia: 'Georgia, "Times New Roman", serif',
   arial: "Arial, Helvetica, sans-serif",
 };

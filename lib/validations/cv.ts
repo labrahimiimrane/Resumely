@@ -35,6 +35,14 @@ export const FONT_FAMILIES = ["geist", "inter", "georgia", "arial"] as const;
 
 export const PAGE_SIZES = ["A4", "Letter"] as const;
 
+/** Numeric presentation limits, shared by the schema and the Customize controls. */
+export const SETTINGS_LIMITS = {
+  fontSize: { min: 9, max: 13 },
+  lineHeight: { min: 1, max: 2 },
+  sectionSpacing: { min: 4, max: 32 },
+  pageMargin: { min: 10, max: 30 },
+} as const;
+
 export const CV_DATE_PATTERN = /^(\d{4}(-(0[1-9]|1[0-2]))?)?$/;
 const URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 const SAFE_URL_SCHEME_PATTERN = /^https?:/i;
@@ -42,7 +50,7 @@ const SAFE_URL_SCHEME_PATTERN = /^https?:/i;
 // "java\tscript:" or " javascript:" must be judged without them.
 const IGNORED_URL_CHARS = /[\u0000- \u007f]/g;
 const PHOTO_PATTERN = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
-const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
+export const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
 const shortText = z.string().max(SHORT_TEXT_MAX);
 const longText = z.string().max(LONG_TEXT_MAX);
@@ -154,12 +162,12 @@ export const customSectionSchema = z.object({
 export const presentationSettingsSchema = z.object({
   template: z.enum(TEMPLATE_IDS),
   fontFamily: z.enum(FONT_FAMILIES),
-  fontSize: z.number().min(9).max(13),
-  lineHeight: z.number().min(1).max(2),
+  fontSize: z.number().min(SETTINGS_LIMITS.fontSize.min).max(SETTINGS_LIMITS.fontSize.max),
+  lineHeight: z.number().min(SETTINGS_LIMITS.lineHeight.min).max(SETTINGS_LIMITS.lineHeight.max),
   primaryColor: hexColor,
   textColor: hexColor,
-  sectionSpacing: z.number().min(4).max(32),
-  pageMargin: z.number().min(10).max(30),
+  sectionSpacing: z.number().min(SETTINGS_LIMITS.sectionSpacing.min).max(SETTINGS_LIMITS.sectionSpacing.max),
+  pageMargin: z.number().min(SETTINGS_LIMITS.pageMargin.min).max(SETTINGS_LIMITS.pageMargin.max),
   pageSize: z.enum(PAGE_SIZES),
 });
 

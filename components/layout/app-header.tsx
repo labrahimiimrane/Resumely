@@ -1,12 +1,18 @@
 "use client";
 
+import { SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { TemplateSelector } from "@/components/layout/template-selector";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UndoRedoControls } from "@/components/layout/undo-redo-controls";
 import { useCv } from "@/hooks/use-cv";
 import { getCvDisplayName } from "@/lib/cv/document";
 
-export function AppHeader() {
+type AppHeaderProps = {
+  onCustomize: () => void;
+};
+
+export function AppHeader({ onCustomize }: AppHeaderProps) {
   const { cv } = useCv();
 
   return (
@@ -28,6 +34,11 @@ export function AppHeader() {
       <UndoRedoControls />
       <span aria-hidden="true" className="h-[22px] w-px bg-border" />
       <TemplateSelector />
+      {/* No aria-pressed: the undo shortcut treats a focused aria-pressed="true" element as a drag. */}
+      <Button variant="outline" size="sm" onClick={onCustomize} className="h-[34px]">
+        <SlidersHorizontal aria-hidden="true" />
+        <span className="max-sm:sr-only">Customize</span>
+      </Button>
       <ThemeToggle />
     </header>
   );
