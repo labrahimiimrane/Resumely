@@ -1,6 +1,6 @@
 import "server-only";
 
-import { chromium, type Browser } from "playwright";
+import { chromium, type Browser, type BrowserContext } from "playwright";
 import { PDF_RENDER_TIMEOUT_MS } from "@/lib/pdf/limits";
 import type { CvDocument } from "@/types/cv";
 
@@ -9,7 +9,8 @@ let browserPromise: Promise<Browser> | null = null;
 /** One shared Chromium, launched on first use and relaunched if it fails or disconnects. */
 function getBrowser(): Promise<Browser> {
   if (!browserPromise) {
-    const launching = chromium.launch();
+    // Same budget as a render: a stuck launch rejects, clears itself below, and the next request retries.
+    const launching = chromium.launch({ timeout: PDF_RENDER_TIMEOUT_MS });
     browserPromise = launching;
     launching.then(
       (browser) => browser.on("disconnected", () => {
@@ -42,11 +43,14 @@ function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
 
 /** Renders a validated CV to PDF bytes through the internal print page. */
 export async function renderCvPdf(cv: CvDocument, origin: string): Promise<Uint8Array> {
-  const browser = await getBrowser();
-  const context = await browser.newContext({ colorScheme: "light" });
+  // The budget starts here, so a slow cold start (browser launch, new context) can't outlast it.
+  const contextPromise = getBrowser().then((browser) => browser.newContext({ colorScheme: "light" }));
+  // Set once the context exists; the cast keeps TypeScript from narrowing it to undefined in `finally`.
+  let context = undefined as BrowserContext | undefined;
   try {
     return await withTimeout(
-      (async () => {
+      contextPromise.then(async (created) => {
+        context = created;
         // Only the app's own origin and inline data may load; everything else is refused.
         await context.route("**/*", (route) => {
           const url = route.request().url();
@@ -65,10 +69,12 @@ export async function renderCvPdf(cv: CvDocument, origin: string): Promise<Uint8
           margin: { top: "0", right: "0", bottom: "0", left: "0" },
         });
         return new Uint8Array(pdf);
-      })(),
+      }),
       PDF_RENDER_TIMEOUT_MS,
     );
   } finally {
-    await context.close().catch(() => undefined);
+    if (context) await context.close().catch(() => undefined);
+    // The deadline passed before the context existed: close it when it arrives, without holding the response.
+    else void contextPromise.then((late) => late.close()).catch(() => undefined);
   }
 }
