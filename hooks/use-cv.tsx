@@ -34,6 +34,8 @@ type UpdateOptions = { coalesceKey?: string };
 type CvContextValue = {
   cv: CvDocument;
   updateCv: (updater: CvUpdater, options?: UpdateOptions) => void;
+  /** Replaces the whole CV as one undoable step and remounts the editor forms. */
+  replaceCv: (cv: CvDocument) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -133,6 +135,14 @@ function LoadedCvProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const replaceCv = useCallback(
+    (cv: CvDocument) => {
+      const now = performance.now();
+      step((history) => commit(history, cv, { now }));
+    },
+    [step],
+  );
+
   const undo = useCallback(() => step(undoHistory), [step]);
   const redo = useCallback(() => step(redoHistory), [step]);
 
@@ -140,13 +150,14 @@ function LoadedCvProvider({ children }: { children: ReactNode }) {
     () => ({
       cv: present,
       updateCv,
+      replaceCv,
       undo,
       redo,
       canUndo: history.past.length > 0,
       canRedo: history.future.length > 0,
       revision,
     }),
-    [present, history, revision, updateCv, undo, redo],
+    [present, history, revision, updateCv, replaceCv, undo, redo],
   );
 
   return <CvContext.Provider value={value}>{children}</CvContext.Provider>;
