@@ -59,9 +59,13 @@ test("a pasted job description shows found and missing keywords and is not kept"
   await expect(chips).toContainText("Found: React");
   await expect(chips).toContainText("Found: TypeScript");
   await expect(chips).toContainText("Missing: Kubernetes");
-  await expect(
-    atsRegion(page).getByRole("region", { name: "Score overview" }).getByRole("listitem").filter({ hasText: "Keywords" }),
-  ).toBeVisible();
+  const overview = atsRegion(page).getByRole("region", { name: "Score overview" });
+  await expect(overview.getByRole("listitem").filter({ hasText: "Keywords" })).toBeVisible();
+
+  // The sidebar badge (and its screen-reader text) shows the same score, keywords included.
+  const score = (await overview.getByRole("img").getAttribute("aria-label"))!.match(/\d+/)![0];
+  const atsNav = page.getByRole("navigation", { name: "CV sections" }).getByRole("button", { name: /^ATS analysis/ });
+  await expect(atsNav).toContainText(`score ${score} out of 100`);
 
   await page.reload();
   await openSection(page, "ATS analysis");

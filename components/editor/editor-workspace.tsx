@@ -54,6 +54,7 @@ export function EditorWorkspace() {
         onSelect={selectSection}
         atsActive={view === "ats"}
         onSelectAts={() => setView("ats")}
+        jobDescription={jobDescription}
       />
       <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8">
         <div className="mx-auto max-w-[680px]">

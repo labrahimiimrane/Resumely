@@ -1,14 +1,12 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { CheckList } from "@/components/ats/check-list";
 import { KeywordCard } from "@/components/ats/keyword-card";
 import { RecommendationList } from "@/components/ats/recommendation-list";
 import { ATS_DISCLAIMER, ScoreOverview } from "@/components/ats/score-overview";
 import { Button } from "@/components/ui/button";
-import { useCv } from "@/hooks/use-cv";
-import { analyzeCv } from "@/lib/ats/analyze";
-import { extractKeywords, matchKeywords } from "@/lib/ats/keywords";
+import { useAtsReport } from "@/hooks/use-ats-report";
 import type { EditorSectionId } from "@/lib/cv/sections";
 
 type AtsPanelProps = {
@@ -19,12 +17,7 @@ type AtsPanelProps = {
 
 export function AtsPanel({ onNavigate, jobDescription, onJobDescriptionChange }: AtsPanelProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const { cv } = useCv();
-  const deferredDescription = useDeferredValue(jobDescription);
-  const keywords = useMemo(() => extractKeywords(deferredDescription), [deferredDescription]);
-  const keywordMatch = useMemo(() => matchKeywords(keywords, cv), [keywords, cv]);
-  const hasDescription = deferredDescription.trim() !== "";
-  const report = useMemo(() => analyzeCv(cv, hasDescription ? keywordMatch : null), [cv, hasDescription, keywordMatch]);
+  const { report, keywordMatch, hasDescription } = useAtsReport(jobDescription);
 
   useEffect(() => {
     headingRef.current?.focus();

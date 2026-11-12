@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useAtsReport } from "@/hooks/use-ats-report";
 import { useCv } from "@/hooks/use-cv";
-import { analyzeCv } from "@/lib/ats/analyze";
 import { EDITOR_SECTIONS, type EditorSectionId } from "@/lib/cv/sections";
 import type { CvDocument } from "@/types/cv";
 import { cn } from "@/lib/utils";
@@ -38,11 +37,13 @@ type SectionNavProps = {
   onSelect: (id: EditorSectionId) => void;
   atsActive: boolean;
   onSelectAts: () => void;
+  /** The in-memory job description, so the badge score includes keywords like the ATS panel. */
+  jobDescription: string;
 };
 
-export function SectionNav({ activeSection, onSelect, atsActive, onSelectAts }: SectionNavProps) {
+export function SectionNav({ activeSection, onSelect, atsActive, onSelectAts, jobDescription }: SectionNavProps) {
   const { cv } = useCv();
-  const report = useMemo(() => analyzeCv(cv), [cv]);
+  const { report } = useAtsReport(jobDescription);
 
   return (
     <nav
