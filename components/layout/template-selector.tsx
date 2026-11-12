@@ -2,11 +2,9 @@
 
 import { useId } from "react";
 import { ChevronDown } from "lucide-react";
-import { TEMPLATE_LABELS, TEMPLATES, type TemplateId } from "@/components/templates";
+import { TEMPLATE_LABELS, type TemplateId } from "@/components/templates";
 import { useCv } from "@/hooks/use-cv";
 import { TEMPLATE_IDS } from "@/lib/validations/cv";
-
-const AVAILABLE_TEMPLATES = TEMPLATE_IDS.filter((id) => TEMPLATES[id]);
 
 export function TemplateSelector() {
   const { cv, updateCv } = useCv();
@@ -14,7 +12,7 @@ export function TemplateSelector() {
   const current = cv.settings.template;
 
   const select = (next: TemplateId) => {
-    if (next === current || !TEMPLATES[next]) return;
+    if (next === current) return;
     updateCv((doc) => ({ ...doc, settings: { ...doc.settings, template: next } }));
   };
 
@@ -29,12 +27,7 @@ export function TemplateSelector() {
         onChange={(event) => select(event.target.value as TemplateId)}
         className="h-full cursor-pointer appearance-none bg-transparent pr-8 font-medium outline-none dark:[color-scheme:dark]"
       >
-        {TEMPLATES[current] ? null : (
-          <option value={current} disabled>
-            {TEMPLATE_LABELS[current]} (coming soon)
-          </option>
-        )}
-        {AVAILABLE_TEMPLATES.map((id) => (
+        {TEMPLATE_IDS.map((id) => (
           <option key={id} value={id}>
             {TEMPLATE_LABELS[id]}
           </option>

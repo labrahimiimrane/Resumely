@@ -52,14 +52,37 @@ export function EntryHeading({ title, aside, sub }: { title: string; aside: stri
   );
 }
 
-export function SectionBody({ section }: { section: ViewSection }) {
+// Literal class strings so Tailwind can see them; "default" must stay identical to the original markup.
+const SPACING = {
+  default: {
+    experience: "flex flex-col gap-[0.9em]",
+    entries: "flex flex-col gap-[0.7em]",
+    bullets: "mt-[0.3em] list-disc pl-[1.2em] [&>li+li]:mt-[0.15em]",
+    certifications: "flex flex-col gap-[0.3em]",
+  },
+  compact: {
+    experience: "flex flex-col gap-[0.5em]",
+    entries: "flex flex-col gap-[0.4em]",
+    bullets: "mt-[0.15em] list-disc pl-[1.2em] [&>li+li]:mt-[0.05em]",
+    certifications: "flex flex-col gap-[0.15em]",
+  },
+};
+
+export function SectionBody({
+  section,
+  density = "default",
+}: {
+  section: ViewSection;
+  density?: keyof typeof SPACING;
+}) {
+  const spacing = SPACING[density];
   switch (section.type) {
     case "summary":
     case "custom":
       return <p className="whitespace-pre-line">{section.text}</p>;
     case "experience":
       return (
-        <div className="flex flex-col gap-[0.9em]">
+        <div className={spacing.experience}>
           {section.items.map((item) => (
             <div key={item.id}>
               <EntryHeading
@@ -68,7 +91,7 @@ export function SectionBody({ section }: { section: ViewSection }) {
                 sub={[item.organization, item.location].filter(Boolean).join(", ")}
               />
               {item.bullets.length > 0 ? (
-                <ul className="mt-[0.3em] list-disc pl-[1.2em] [&>li+li]:mt-[0.15em]">
+                <ul className={spacing.bullets}>
                   {item.bullets.map((bullet, index) => (
                     <li key={index}>{bullet}</li>
                   ))}
@@ -80,7 +103,7 @@ export function SectionBody({ section }: { section: ViewSection }) {
       );
     case "education":
       return (
-        <div className="flex flex-col gap-[0.7em]">
+        <div className={spacing.entries}>
           {section.items.map((item) => (
             <div key={item.id}>
               <EntryHeading
@@ -106,7 +129,7 @@ export function SectionBody({ section }: { section: ViewSection }) {
       );
     case "projects":
       return (
-        <div className="flex flex-col gap-[0.7em]">
+        <div className={spacing.entries}>
           {section.items.map((item) => (
             <div key={item.id}>
               <EntryHeading title={item.name} aside="" sub={item.technologies.join(", ")} />
@@ -129,7 +152,7 @@ export function SectionBody({ section }: { section: ViewSection }) {
       );
     case "certifications":
       return (
-        <ul className="flex flex-col gap-[0.3em]">
+        <ul className={spacing.certifications}>
           {section.items.map((item) => (
             <li key={item.id}>
               <div className="flex items-baseline justify-between gap-[1em]">

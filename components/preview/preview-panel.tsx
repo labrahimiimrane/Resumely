@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { CvPage } from "@/components/templates/cv-page";
-import { resolveTemplate } from "@/components/templates";
+import { TEMPLATES } from "@/components/templates";
 import { useCv } from "@/hooks/use-cv";
 import { buildCvView } from "@/lib/cv/render";
 
@@ -25,7 +25,7 @@ export function usePreviewVisible() {
 export function PreviewPanel() {
   const { cv } = useCv();
   const view = useMemo(() => buildCvView(cv), [cv]);
-  const { Template, available } = resolveTemplate(cv.settings.template);
+  const Template = TEMPLATES[cv.settings.template];
   const frameRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState({ scale: 1, height: 0 });
@@ -69,11 +69,6 @@ export function PreviewPanel() {
           </div>
         </div>
       </div>
-      {!available ? (
-        <p className="mt-3 text-center text-xs text-muted-foreground">
-          This template is coming soon. Showing Professional for now.
-        </p>
-      ) : null}
     </aside>
   );
 }
