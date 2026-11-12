@@ -1,8 +1,17 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { PreviewBar } from "@/components/preview/preview-bar";
 import { usePagination } from "@/components/preview/use-pagination";
+import { formatZoom, zoomIn, zoomOut, zoomScale, type ZoomState } from "@/components/preview/zoom";
 import { CvPage } from "@/components/templates/cv-page";
 import { TEMPLATES } from "@/components/templates";
 import { useCv } from "@/hooks/use-cv";
@@ -35,26 +44,82 @@ export function PreviewPanel() {
   const slices = usePagination(measureRef, view, settings);
   const stageRef = useRef<HTMLDivElement>(null);
   const [stageWidth, setStageWidth] = useState(0);
+  const [zoom, setZoom] = useState<ZoomState>("fit");
+  const [currentPage, setCurrentPage] = useState(1);
+  const currentPageRef = useRef(1);
 
   // Layout effects so the first paint already has the right scale and page heights.
   useLayoutEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
-    const observer = new ResizeObserver(() => setStageWidth(stage.clientWidth));
+    // The stage's content box: its width minus padding and any vertical scrollbar.
+    const measure = () => {
+      const style = getComputedStyle(stage);
+      setStageWidth(stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+    };
+    const observer = new ResizeObserver(measure);
     observer.observe(stage);
-    setStageWidth(stage.clientWidth);
+    measure();
     return () => observer.disconnect();
   }, []);
 
-  const scale = stageWidth ? Math.min(1, stageWidth / PAGE_SIZE_PX[settings.pageSize].width) : 1;
+  const pageWidth = PAGE_SIZE_PX[settings.pageSize].width;
+  const fitScale = stageWidth > 0 ? Math.min(1, stageWidth / pageWidth) : 1;
+  const scale = zoomScale(zoom, fitScale);
   const contentHeight = pageContentHeight(settings);
+  const pageCount = slices.length;
+
+  const syncCurrentPage = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const next = currentPageFromScroll(stage);
+    currentPageRef.current = next;
+    setCurrentPage(next);
+  }, []);
+
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    stage.addEventListener("scroll", syncCurrentPage, { passive: true });
+    return () => stage.removeEventListener("scroll", syncCurrentPage);
+  }, [syncCurrentPage]);
+
+  // A zoom change keeps the current page at the top of the stage.
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (stage) scrollToPage(stage, currentPageRef.current, "instant");
+    syncCurrentPage();
+  }, [scale, syncCurrentPage]);
+
+  // Re-derive (and so clamp) the current page when the page count changes.
+  useLayoutEffect(() => {
+    syncCurrentPage();
+  }, [pageCount, syncCurrentPage]);
+
+  const goToPage = (page: number) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    scrollToPage(stage, page, reduce ? "instant" : "smooth");
+  };
+
+  const nextZoomIn = zoomIn(zoom, fitScale);
+  const nextZoomOut = zoomOut(zoom, fitScale);
 
   return (
     <aside
       aria-label="CV preview"
       className="relative flex w-[540px] shrink-0 flex-col overflow-hidden border-l bg-canvas 2xl:w-[680px]"
     >
-      <PreviewBar />
+      <PreviewBar
+        zoomLabel={formatZoom(scale)}
+        onZoomIn={nextZoomIn === null ? null : () => setZoom(nextZoomIn)}
+        onZoomOut={nextZoomOut === null ? null : () => setZoom(nextZoomOut)}
+        currentPage={currentPage}
+        pageCount={pageCount}
+        onPreviousPage={currentPage > 1 ? () => goToPage(currentPage - 1) : null}
+        onNextPage={currentPage < pageCount ? () => goToPage(currentPage + 1) : null}
+      />
 
       {/* Hidden full-length copy that pagination measures; never visible or reachable. */}
       <div aria-hidden="true" inert className="pointer-events-none invisible absolute top-0 left-0 h-0 overflow-hidden">
@@ -67,13 +132,15 @@ export function PreviewPanel() {
         </CvPage>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
-        <div ref={stageRef} className="flex w-full flex-col gap-6">
+      <div ref={stageRef} className="min-h-0 flex-1 overflow-auto px-6 py-6">
+        {/* min-w-full + w-max with auto margins centres narrow pages without hiding the left edge of wide ones. */}
+        <div className="flex w-max min-w-full flex-col gap-6">
           {slices.map((slice, index) => (
             <PageFrame
               key={index}
               settings={settings}
               scale={scale}
+              pageWidth={pageWidth}
               contentHeight={contentHeight}
               oversized={slice.oversized}
               label={`Page ${index + 1} of ${slices.length}`}
@@ -94,13 +161,14 @@ export function PreviewPanel() {
 type PageFrameProps = {
   settings: PresentationSettings;
   scale: number;
+  pageWidth: number;
   contentHeight: number;
   oversized: boolean;
   label: string;
   children: ReactNode;
 };
 
-function PageFrame({ settings, scale, contentHeight, oversized, label, children }: PageFrameProps) {
+function PageFrame({ settings, scale, pageWidth, contentHeight, oversized, label, children }: PageFrameProps) {
   const pageRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
   const [overflowing, setOverflowing] = useState(false);
@@ -123,7 +191,7 @@ function PageFrame({ settings, scale, contentHeight, oversized, label, children 
   }, [contentHeight]);
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div data-page-frame style={{ width: pageWidth * scale }} className="mx-auto flex flex-col items-center gap-2">
       <div style={{ height: height * scale || undefined }} className="relative w-full">
         <div
           ref={pageRef}
@@ -141,4 +209,27 @@ function PageFrame({ settings, scale, contentHeight, oversized, label, children 
       ) : null}
     </div>
   );
+}
+
+/** The last page whose top is above a third of the stage's height; the last page once scrolled to the bottom. */
+function currentPageFromScroll(stage: HTMLElement) {
+  const frames = stage.querySelectorAll<HTMLElement>("[data-page-frame]");
+  if (frames.length === 0) return 1;
+  const scrollable = stage.scrollHeight > stage.clientHeight + 1;
+  if (scrollable && stage.scrollTop + stage.clientHeight >= stage.scrollHeight - 1) return frames.length;
+  const line = stage.getBoundingClientRect().top + stage.clientHeight / 3;
+  let current = 1;
+  frames.forEach((frame, index) => {
+    if (frame.getBoundingClientRect().top <= line) current = index + 1;
+  });
+  return current;
+}
+
+/** Scroll so the page's top sits at the stage's top padding. */
+function scrollToPage(stage: HTMLElement, page: number, behavior: ScrollBehavior) {
+  const frame = stage.querySelectorAll<HTMLElement>("[data-page-frame]")[page - 1];
+  if (!frame) return;
+  const padding = parseFloat(getComputedStyle(stage).paddingTop);
+  const top = stage.scrollTop + frame.getBoundingClientRect().top - stage.getBoundingClientRect().top - padding;
+  stage.scrollTo({ top, behavior });
 }
