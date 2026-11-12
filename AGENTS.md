@@ -59,7 +59,9 @@ and installed dependencies before adding machinery.
 - Build: `npm run build`
 - Production server: `npm run start`
 - Lint: `npm run lint`
+- Browser tests: `npm run test:browser` (Playwright Test, Chromium; builds the
+  production app and serves it on port 3210, so it does not reuse a dev server)
 
-There is no test command and no typecheck script yet; `npm run build` runs the
-TypeScript check. Tests are not a required gate until a real test command is
-added here.
+There is no unit test command and no typecheck script yet; `npm run build` runs
+the TypeScript check. Unit tests are not a required gate until a real test
+command is added here.
