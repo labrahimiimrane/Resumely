@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCv } from "@/hooks/use-cv";
 import { cvFileName } from "@/lib/storage/cv-file";
+import { downloadFile } from "@/lib/utils";
 
 const ERROR_MESSAGES: Record<number, string> = {
   400: "Your CV couldn't be read for the PDF. Check its content and try again.",
@@ -35,12 +36,7 @@ export function DownloadPdfButton({ inBar = false }: DownloadPdfButtonProps) {
         toast.error(ERROR_MESSAGES[response.status] ?? FALLBACK_ERROR);
         return;
       }
-      const url = URL.createObjectURL(await response.blob());
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = cvFileName(cv, "pdf");
-      link.click();
-      URL.revokeObjectURL(url);
+      downloadFile(await response.blob(), cvFileName(cv, "pdf"));
       toast.success("PDF downloaded");
     } catch {
       toast.error(FALLBACK_ERROR);

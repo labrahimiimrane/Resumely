@@ -25,6 +25,7 @@ import { useCv } from "@/hooks/use-cv";
 import { getCvDisplayName, isCvEmpty } from "@/lib/cv/document";
 import { createExampleCv } from "@/lib/cv/example";
 import { cvFileName, parseCvFile, serializeCv, type ParseCvFileResult } from "@/lib/storage/cv-file";
+import { downloadFile } from "@/lib/utils";
 import type { CvDocument } from "@/types/cv";
 
 const IMPORT_ERRORS: Record<Extract<ParseCvFileResult, { ok: false }>["reason"], string> = {
@@ -51,12 +52,7 @@ export function CvDataMenu() {
 
   const exportCv = () => {
     try {
-      const url = URL.createObjectURL(new Blob([serializeCv(cv)], { type: "application/json" }));
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = cvFileName(cv);
-      link.click();
-      URL.revokeObjectURL(url);
+      downloadFile(new Blob([serializeCv(cv)], { type: "application/json" }), cvFileName(cv));
       toast.success("CV exported");
     } catch {
       toast.error("Couldn't export your CV.");
