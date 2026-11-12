@@ -52,6 +52,54 @@ test.describe("autosave and recovery", () => {
     await expect(field(page, "Full name")).toHaveValue("");
     expect(await readStorage(page, CV_BACKUP_KEY)).toBe("{not json");
   });
+
+  /** Edits the CV, waits until the app state has it, then flushes autosave now instead of after its debounce. */
+  async function editAndFlush(page: Page) {
+    await field(page, "Full name").fill("Ada Lovelace");
+    await expect(page.getByRole("banner").getByText("Ada Lovelace")).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
+  }
+
+  const SAVE_FAILED = "Couldn't save your CV in this browser.";
+
+  test("blocked storage warns once and does not add a save error", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(window, "localStorage", {
+        configurable: true,
+        get() {
+          throw new DOMException("The operation is insecure.", "SecurityError");
+        },
+      });
+    });
+    await openApp(page);
+    await expect(toast(page, "Autosave isn't available in this browser.")).toBeVisible();
+
+    await editAndFlush(page);
+    // Absence has no event to wait on; give a failed save time to raise its toast. Count once
+    // instead of `toHaveCount(0)`, which retries until Sonner's 4 s timer expires any toast.
+    await page.waitForTimeout(500);
+    expect(await toast(page, SAVE_FAILED).count()).toBe(0);
+    expect(await page.locator("[data-sonner-toast]").count()).toBe(1);
+  });
+
+  test("a failed save after a normal start shows the save error once", async ({ page }) => {
+    await page.addInitScript(() => {
+      Storage.prototype.setItem = () => {
+        throw new DOMException("The quota has been exceeded.", "QuotaExceededError");
+      };
+    });
+    await openApp(page);
+
+    await editAndFlush(page);
+    await expect(toast(page, SAVE_FAILED)).toHaveCount(1);
+    expect(await toast(page, "Autosave isn't available").count()).toBe(0);
+
+    // A second failed save in the same run does not repeat the error.
+    await field(page, "Email").fill("ada@example.com");
+    await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
+    await page.waitForTimeout(500);
+    expect(await toast(page, SAVE_FAILED).count()).toBe(1);
+  });
 });
 
 test.describe("JSON import and export", () => {

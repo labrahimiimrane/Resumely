@@ -78,8 +78,9 @@ function LoadedCvProvider({ children }: { children: ReactNode }) {
   // empty or unreadable start writes nothing until the first edit.
   const savedRef = useRef<CvDocument>(present);
   const latestRef = useRef<CvDocument>(present);
-  // One error toast per run of failed saves; a successful save re-arms it.
-  const saveFailingRef = useRef(false);
+  // One error toast per run of failed saves; a successful save re-arms it. When storage was
+  // unavailable at load, the "Autosave isn't available" warning already counts as that notice.
+  const saveFailingRef = useRef(loaded.status === "unavailable");
 
   const flush = useCallback(() => {
     const cv = latestRef.current;
