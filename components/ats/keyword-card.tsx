@@ -1,12 +1,15 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { type Keyword, type KeywordMatch, MAX_JOB_DESCRIPTION_LENGTH } from "@/lib/ats/keywords";
 import { cn } from "@/lib/utils";
+
+// How long the keyword count must stay unchanged before screen readers hear it.
+const KEYWORD_ANNOUNCE_DELAY_MS = 1000;
 
 type KeywordCardProps = {
   value: string;
@@ -18,6 +21,17 @@ type KeywordCardProps = {
 
 export function KeywordCard({ value, onChange, hasDescription, match }: KeywordCardProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const status = !hasDescription
+    ? ""
+    : match.total === 0
+      ? "No keywords found. Paste the full job description."
+      : `${match.found.length} of ${match.total} keywords found`;
+  // Screen readers get the count once it settles, not on every change while typing or pasting.
+  const [announced, setAnnounced] = useState("");
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAnnounced(status), KEYWORD_ANNOUNCE_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [status]);
 
   function clear() {
     onChange("");
@@ -25,7 +39,7 @@ export function KeywordCard({ value, onChange, hasDescription, match }: KeywordC
   }
 
   return (
-    <section aria-labelledby="ats-keywords-heading" className="rounded-xl border bg-card p-6 shadow-xs">
+    <section aria-labelledby="ats-keywords-heading" className="relative rounded-xl border bg-card p-6 shadow-xs">
       <h2 id="ats-keywords-heading" className="text-[15px] font-semibold">
         Keywords
       </h2>
@@ -46,12 +60,10 @@ export function KeywordCard({ value, onChange, hasDescription, match }: KeywordC
         className="max-h-60"
       />
       <div className="mt-4 mb-2 flex min-h-7 items-center justify-between gap-3 text-xs text-muted-foreground">
-        <p aria-live="polite">
-          {!hasDescription
-            ? ""
-            : match.total === 0
-              ? "No keywords found. Paste the full job description."
-              : `${match.found.length} of ${match.total} keywords found`}
+        {/* Visual only: the settled status below is what screen readers read. */}
+        <p aria-hidden="true">{status}</p>
+        <p role="status" className="sr-only">
+          {announced}
         </p>
         {value ? (
           <Button variant="ghost" size="sm" onClick={clear}>

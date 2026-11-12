@@ -1,9 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
-import { loadExampleCv, openApp, preview } from "./helpers";
+import { CV_STORAGE_KEY, loadExampleCv, openApp, preview, readStorage } from "./helpers";
 
-// A real Chromium render on the server; give it room beyond the default 30 s.
-test.describe.configure({ timeout: 60_000 });
+// A real Chromium render on the server; give it room beyond the default 30 s. Serial, because
+// the server allows only a few renders at once and this is the only file that renders PDFs.
+test.describe.configure({ mode: "serial", timeout: 60_000 });
 
 async function downloadPdf(page: Page) {
   // Hold the request briefly so the busy state is observable regardless of render speed.
@@ -62,5 +63,42 @@ test.describe("PDF route errors", () => {
     const response = await request.post("/api/pdf", { headers: { "Content-Type": "application/json" }, data: oversized });
     expect(response.status()).toBe(413);
     expect(await response.json()).toEqual({ error: "too-large" });
+  });
+});
+
+test.describe("render cap", () => {
+  test("simultaneous requests beyond the cap get 503 busy", async ({ page, request }) => {
+    await expect.poll(() => readStorage(page, CV_STORAGE_KEY)).not.toBeNull();
+    const cv = await readStorage(page, CV_STORAGE_KEY);
+
+    const responses = await Promise.all(
+      Array.from({ length: 6 }, () => request.post("/api/pdf", { data: cv, timeout: 45_000 })),
+    );
+    const results = await Promise.all(
+      responses.map(async (response) => ({
+        status: response.status(),
+        type: response.headers()["content-type"] ?? "",
+        body: response.status() === 503 ? await response.json() : null,
+      })),
+    );
+
+    for (const result of results) {
+      if (result.status === 200) expect(result.type).toContain("application/pdf");
+      else expect(result).toMatchObject({ status: 503, body: { error: "busy" } });
+    }
+    expect(results.some((result) => result.status === 200)).toBe(true);
+    expect(results.some((result) => result.status === 503)).toBe(true);
+  });
+
+  test("a busy server shows a try-again message", async ({ page }) => {
+    await page.route("**/api/pdf", (route) =>
+      route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "busy" }) }),
+    );
+    await page.getByRole("button", { name: "Download PDF" }).click();
+
+    await expect(
+      page.locator("[data-sonner-toast]").filter({ hasText: "The PDF service is busy. Please try again in a moment." }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Download PDF" })).toBeEnabled();
   });
 });

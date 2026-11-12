@@ -11,6 +11,7 @@ import { downloadFile } from "@/lib/utils";
 const ERROR_MESSAGES: Record<number, string> = {
   400: "Your CV couldn't be read for the PDF. Check its content and try again.",
   413: "Your CV is too large to turn into a PDF. Try a smaller photo or less content.",
+  503: "The PDF service is busy. Please try again in a moment.",
 };
 const FALLBACK_ERROR = "Couldn't create your PDF. Please try again.";
 

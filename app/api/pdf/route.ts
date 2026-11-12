@@ -1,11 +1,15 @@
-import { PDF_REQUEST_MAX_BYTES } from "@/lib/pdf/limits";
+import { PDF_MAX_CONCURRENT_RENDERS, PDF_REQUEST_MAX_BYTES } from "@/lib/pdf/limits";
 import { loopbackOrigin, renderCvPdf } from "@/lib/pdf/render-pdf";
 import { cvFileName } from "@/lib/storage/cv-file";
 import { cvDocumentSchema } from "@/lib/validations/cv";
 
 // Runs on the default Node.js runtime; the `runtime` segment config is rejected under cacheComponents.
 
-type PdfErrorCode = "unsupported-media-type" | "too-large" | "invalid-cv" | "render-failed";
+type PdfErrorCode = "unsupported-media-type" | "too-large" | "invalid-cv" | "busy" | "render-failed";
+
+// Renders in progress in this server process. The app runs as one Node server, so a
+// module-level count is enough to bound how many Chromium contexts are open at once.
+let activeRenders = 0;
 
 function errorResponse(status: number, error: PdfErrorCode): Response {
   return Response.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
@@ -60,13 +64,19 @@ export async function POST(request: Request): Promise<Response> {
     return errorResponse(500, "render-failed");
   }
 
+  // Checked after validation, so rejected requests never take a slot.
+  if (activeRenders >= PDF_MAX_CONCURRENT_RENDERS) return errorResponse(503, "busy");
+
   let pdf: Uint8Array;
+  activeRenders += 1;
   try {
     pdf = await renderCvPdf(cv, origin);
   } catch {
     // Generic only: never log the CV or anything derived from it.
     console.error("PDF render failed");
     return errorResponse(500, "render-failed");
+  } finally {
+    activeRenders -= 1;
   }
 
   return new Response(Buffer.from(pdf), {

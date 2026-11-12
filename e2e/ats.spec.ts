@@ -54,7 +54,11 @@ test("a pasted job description shows found and missing keywords and is not kept"
   const keywords = atsRegion(page).getByRole("region", { name: "Keywords" });
 
   await field(page, "Job description").fill(JOB_DESCRIPTION);
-  await expect(keywords.getByText(/^\d+ of \d+ keywords found$/)).toBeVisible();
+  // Screen readers hear the count only once it has settled (1 s without changes). Read once
+  // rather than with an auto-retrying assertion, which would wait for the settled text.
+  const announcement = keywords.getByRole("status");
+  expect(await announcement.textContent()).toBe("");
+  await expect(announcement).toHaveText(/^\d+ of \d+ keywords found$/);
   const chips = keywords.getByRole("list", { name: "Job keywords" });
   await expect(chips).toContainText("Found: React");
   await expect(chips).toContainText("Found: TypeScript");
