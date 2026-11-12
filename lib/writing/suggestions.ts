@@ -73,3 +73,52 @@ export const ACHIEVEMENT_EXAMPLES: readonly string[] = [
   "Built and maintained a 120-component design system used by 4 product teams.",
   "Negotiated supplier contracts that lowered annual purchasing costs by $250,000.",
 ];
+
+export type SkillArea = {
+  readonly id: string;
+  readonly label: string;
+  readonly items: readonly string[];
+};
+
+export const SKILL_AREAS: readonly SkillArea[] = [
+  {
+    id: "software",
+    label: "Software engineering",
+    items: ["TypeScript", "JavaScript", "Python", "Java", "React", "Node.js", "SQL", "REST APIs", "Git", "Automated testing", "CI/CD", "Cloud infrastructure", "System design"],
+  },
+  {
+    id: "data",
+    label: "Data and analytics",
+    items: ["Data analysis", "SQL", "Python", "Excel", "Data visualization", "Dashboards", "Statistics", "A/B testing", "Data modeling", "ETL", "Machine learning", "Reporting"],
+  },
+  {
+    id: "design",
+    label: "Design",
+    items: ["User research", "Interaction design", "Visual design", "Prototyping", "Wireframing", "Design systems", "Usability testing", "Figma", "Accessibility", "Information architecture", "Typography"],
+  },
+  {
+    id: "marketing",
+    label: "Marketing",
+    items: ["Content marketing", "SEO", "Paid search", "Email marketing", "Social media", "Campaign management", "Marketing analytics", "Copywriting", "Brand strategy", "Lead generation", "CRM"],
+  },
+  {
+    id: "sales",
+    label: "Sales and customer success",
+    items: ["Account management", "Business development", "Pipeline management", "Negotiation", "Customer onboarding", "Customer retention", "CRM", "Solution selling", "Forecasting", "Relationship building", "Upselling"],
+  },
+  {
+    id: "finance",
+    label: "Finance",
+    items: ["Financial modeling", "Budgeting", "Forecasting", "Financial reporting", "Variance analysis", "Accounting", "Excel", "Cost reduction", "Risk management", "Audit", "Cash flow management"],
+  },
+  {
+    id: "operations",
+    label: "Operations and project management",
+    items: ["Project management", "Agile", "Scrum", "Process improvement", "Stakeholder management", "Vendor management", "Supply chain", "Logistics", "Budget management", "Risk assessment", "Lean"],
+  },
+  {
+    id: "soft",
+    label: "Soft skills",
+    items: ["Communication", "Leadership", "Teamwork", "Problem solving", "Time management", "Adaptability", "Critical thinking", "Attention to detail", "Mentoring", "Collaboration", "Presentation skills"],
+  },
+];

@@ -15,7 +15,7 @@ type TagInputFieldProps = {
   onChange: (value: string[]) => void;
 };
 
-function mergeTags(current: string[], candidates: string[]): string[] {
+export function mergeTags(current: string[], candidates: string[]): string[] {
   const seen = new Set(current.map((tag) => tag.toLowerCase()));
   const next = [...current];
   for (const raw of candidates) {

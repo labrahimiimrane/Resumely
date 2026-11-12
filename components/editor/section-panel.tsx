@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ComponentType } from "react";
+import { ChevronDown, Lightbulb } from "lucide-react";
 import { CertificationsSection } from "@/components/editor/certifications-section";
 import { CustomSectionsSection } from "@/components/editor/custom-sections-section";
 import { EducationSection } from "@/components/editor/education-section";
@@ -15,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCv } from "@/hooks/use-cv";
 import { setSectionEnabled } from "@/lib/cv/custom-sections";
 import type { EditorSection, EditorSectionId } from "@/lib/cv/sections";
+import { SECTION_TIPS } from "@/lib/writing/tips";
 
 const SECTION_FORMS: Record<EditorSectionId, ComponentType> = {
   personal: PersonalSection,
@@ -81,6 +83,18 @@ export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
           </div>
         ) : null}
       </div>
+      <details key={section.id} className="group rounded-[10px] border border-dashed bg-background">
+        <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-[10px] px-3 py-2 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
+          <Lightbulb aria-hidden="true" className="size-3.5 text-primary" />
+          Writing tips
+          <ChevronDown aria-hidden="true" className="ml-auto size-3.5 transition-transform group-open:rotate-180" />
+        </summary>
+        <ul className="flex list-disc flex-col gap-1 px-3 pb-3 pl-7 text-xs leading-relaxed text-muted-foreground">
+          {SECTION_TIPS[section.id].map((tip) => (
+            <li key={tip}>{tip}</li>
+          ))}
+        </ul>
+      </details>
       <SectionForm key={STATIC_SECTIONS.has(section.id) ? `${section.id}:${revision}` : section.id} />
     </section>
   );
