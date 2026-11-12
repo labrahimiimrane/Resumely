@@ -13,7 +13,12 @@ const ERROR_MESSAGES: Record<number, string> = {
 };
 const FALLBACK_ERROR = "Couldn't create your PDF. Please try again.";
 
-export function DownloadPdfButton() {
+type DownloadPdfButtonProps = {
+  /** Full-width, always-labelled button for the narrow-screen bottom bar. */
+  inBar?: boolean;
+};
+
+export function DownloadPdfButton({ inBar = false }: DownloadPdfButtonProps) {
   const { cv } = useCv();
   const [busy, setBusy] = useState(false);
 
@@ -45,9 +50,15 @@ export function DownloadPdfButton() {
   };
 
   return (
-    <Button size="sm" onClick={download} disabled={busy} aria-busy={busy} className="h-[34px]">
+    <Button
+      size="sm"
+      onClick={download}
+      disabled={busy}
+      aria-busy={busy}
+      className={inBar ? "h-10 flex-1 shadow-sm" : "h-[34px]"}
+    >
       {busy ? <Loader2 aria-hidden="true" className="animate-spin" /> : <FileDown aria-hidden="true" />}
-      <span className="max-sm:sr-only">{busy ? "Creating PDF…" : "Download PDF"}</span>
+      <span className={inBar ? undefined : "max-sm:sr-only"}>{busy ? "Creating PDF…" : "Download PDF"}</span>
     </Button>
   );
 }

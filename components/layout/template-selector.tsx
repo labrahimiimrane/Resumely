@@ -6,7 +6,12 @@ import { TEMPLATE_LABELS, type TemplateId } from "@/components/templates";
 import { useCv } from "@/hooks/use-cv";
 import { TEMPLATE_IDS } from "@/lib/validations/cv";
 
-export function TemplateSelector() {
+type TemplateSelectorProps = {
+  /** Keep the "Template" label visible on narrow screens (Preview tab row). */
+  showLabel?: boolean;
+};
+
+export function TemplateSelector({ showLabel = false }: TemplateSelectorProps) {
   const { cv, updateCv } = useCv();
   const selectId = useId();
   const current = cv.settings.template;
@@ -18,7 +23,7 @@ export function TemplateSelector() {
 
   return (
     <div className="relative flex h-[34px] shrink-0 items-center gap-2 rounded-md border bg-card pl-3 text-[13px] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
-      <label htmlFor={selectId} className="text-xs text-muted-foreground max-sm:sr-only">
+      <label htmlFor={selectId} className={showLabel ? "text-xs text-muted-foreground" : "text-xs text-muted-foreground max-lg:sr-only"}>
         Template
       </label>
       <select

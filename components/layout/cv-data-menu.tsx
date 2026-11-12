@@ -112,7 +112,7 @@ export function CvDataMenu() {
           render={<Button variant="outline" size="sm" className="h-[34px]" />}
         >
           <Database aria-hidden="true" />
-          <span className="max-sm:sr-only">CV data</span>
+          <span className="max-lg:sr-only">CV data</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-48">
           <DropdownMenuItem onClick={exportCv}>

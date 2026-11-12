@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Redo2, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCv } from "@/hooks/use-cv";
+import { cn } from "@/lib/utils";
 
 const noopSubscribe = () => () => {};
 
@@ -21,7 +22,12 @@ function shortcutBlocked(event: KeyboardEvent) {
   return document.activeElement?.getAttribute("aria-pressed") === "true";
 }
 
-export function UndoRedoControls() {
+type UndoRedoControlsProps = {
+  /** Larger touch targets for the narrow-screen bottom bar. */
+  inBar?: boolean;
+};
+
+export function UndoRedoControls({ inBar = false }: UndoRedoControlsProps) {
   const { undo, redo, canUndo, canRedo, revision } = useCv();
   const isMac = useIsMac();
   const modifier = isMac ? "Cmd" : "Ctrl";
@@ -74,7 +80,7 @@ export function UndoRedoControls() {
         title={`Undo (${modifier}+Z)`}
         disabled={!canUndo}
         onClick={() => run("undo")}
-        className="text-muted-foreground"
+        className={cn("text-muted-foreground", inBar && "size-10")}
       >
         <Undo2 aria-hidden="true" />
       </Button>
@@ -86,7 +92,7 @@ export function UndoRedoControls() {
         title={`Redo (${modifier}+Shift+Z)`}
         disabled={!canRedo}
         onClick={() => run("redo")}
-        className="text-muted-foreground"
+        className={cn("text-muted-foreground", inBar && "size-10")}
       >
         <Redo2 aria-hidden="true" />
       </Button>

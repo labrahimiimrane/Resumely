@@ -25,7 +25,7 @@ export function PreviewBar({
   onNextPage,
 }: PreviewBarProps) {
   return (
-    <div className="flex h-12 shrink-0 items-center justify-end gap-2 border-b bg-card px-3">
+    <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b bg-card px-3 py-1.5 sm:justify-end">
       <div role="group" aria-label="Zoom" className="inline-flex items-center gap-0.5">
         <BarButton label="Zoom out" onAction={onZoomOut}>
           <Minus aria-hidden="true" />

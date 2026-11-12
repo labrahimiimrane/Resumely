@@ -49,7 +49,8 @@ export function SectionNav({ activeSection, onSelect, atsActive, onSelectAts }: 
       aria-label="CV sections"
       className="shrink-0 border-b bg-sidebar lg:w-[236px] lg:overflow-y-auto lg:border-r lg:border-b-0"
     >
-      <div className="flex gap-1.5 overflow-x-auto px-4 py-3 lg:block lg:overflow-visible lg:p-0">
+      {/* relative: contains the absolutely positioned sr-only text so it cannot widen the page. */}
+      <div className="relative flex gap-1.5 overflow-x-auto px-4 py-3 lg:block lg:overflow-visible lg:p-0">
         <p className={GROUP_LABEL}>Content</p>
         <ul className={LIST}>
           {EDITOR_SECTIONS.map((section) => {

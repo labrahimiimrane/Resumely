@@ -12,9 +12,11 @@ import { getCvDisplayName } from "@/lib/cv/document";
 
 type AppHeaderProps = {
   onCustomize: () => void;
+  /** Narrow tier: undo/redo, template, Customize and Download PDF move to the bottom bar and Preview tab. */
+  narrow: boolean;
 };
 
-export function AppHeader({ onCustomize }: AppHeaderProps) {
+export function AppHeader({ onCustomize, narrow }: AppHeaderProps) {
   const { cv } = useCv();
 
   return (
@@ -26,24 +28,34 @@ export function AppHeader({ onCustomize }: AppHeaderProps) {
         >
           R
         </span>
-        <span className="max-sm:sr-only">Resumely</span>
+        <span className="max-md:sr-only">Resumely</span>
       </div>
       <span aria-hidden="true" className="h-[22px] w-px bg-border" />
       <p className="min-w-0 truncate text-[13px] font-medium" title={getCvDisplayName(cv)}>
         {getCvDisplayName(cv)}
       </p>
       <div className="flex-1" />
-      <UndoRedoControls />
-      <span aria-hidden="true" className="h-[22px] w-px bg-border" />
-      <TemplateSelector />
-      <CvDataMenu />
-      {/* No aria-pressed: the undo shortcut treats a focused aria-pressed="true" element as a drag. */}
-      <Button variant="outline" size="sm" onClick={onCustomize} className="h-[34px]">
-        <SlidersHorizontal aria-hidden="true" />
-        <span className="max-sm:sr-only">Customize</span>
-      </Button>
-      <ThemeToggle />
-      <DownloadPdfButton />
+      {/* Each control renders once per tier (chosen in JS): UndoRedoControls owns a global shortcut listener. */}
+      {narrow ? (
+        <>
+          <ThemeToggle />
+          <CvDataMenu />
+        </>
+      ) : (
+        <>
+          <UndoRedoControls />
+          <span aria-hidden="true" className="h-[22px] w-px bg-border" />
+          <TemplateSelector />
+          <CvDataMenu />
+          {/* No aria-pressed: the undo shortcut treats a focused aria-pressed="true" element as a drag. */}
+          <Button variant="outline" size="sm" onClick={onCustomize} className="h-[34px]">
+            <SlidersHorizontal aria-hidden="true" />
+            <span className="max-lg:sr-only">Customize</span>
+          </Button>
+          <ThemeToggle />
+          <DownloadPdfButton />
+        </>
+      )}
     </header>
   );
 }

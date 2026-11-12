@@ -6,7 +6,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { PreviewBar } from "@/components/preview/preview-bar";
@@ -18,24 +17,14 @@ import { useCv } from "@/hooks/use-cv";
 import { buildPageView, fullSlice, pageContentHeight, PAGE_SIZE_PX } from "@/lib/cv/paginate";
 import { buildCvView } from "@/lib/cv/render";
 import type { PresentationSettings } from "@/types/cv";
+import { cn } from "@/lib/utils";
 
-const WIDE_QUERY = "(min-width: 1280px)";
+type PreviewPanelProps = {
+  /** Fill the container (compact Preview tab) instead of the fixed side-panel width. */
+  fill?: boolean;
+};
 
-function subscribeWide(onChange: () => void) {
-  const query = window.matchMedia(WIDE_QUERY);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-export function usePreviewVisible() {
-  return useSyncExternalStore(
-    subscribeWide,
-    () => window.matchMedia(WIDE_QUERY).matches,
-    () => false,
-  );
-}
-
-export function PreviewPanel() {
+export function PreviewPanel({ fill = false }: PreviewPanelProps) {
   const { cv } = useCv();
   const { settings } = cv;
   const view = useMemo(() => buildCvView(cv), [cv]);
@@ -109,7 +98,10 @@ export function PreviewPanel() {
   return (
     <aside
       aria-label="CV preview"
-      className="relative flex w-[540px] shrink-0 flex-col overflow-hidden border-l bg-canvas 2xl:w-[680px]"
+      className={cn(
+        "relative flex flex-col overflow-hidden bg-canvas",
+        fill ? "min-h-0 w-full flex-1" : "w-[540px] shrink-0 border-l 2xl:w-[680px]",
+      )}
     >
       <PreviewBar
         zoomLabel={formatZoom(scale)}
@@ -132,7 +124,7 @@ export function PreviewPanel() {
         </CvPage>
       </div>
 
-      <div ref={stageRef} className="min-h-0 flex-1 overflow-auto px-6 py-6">
+      <div ref={stageRef} className="min-h-0 flex-1 overflow-auto px-4 py-4 sm:px-6 sm:py-6">
         {/* min-w-full + w-max with auto margins centres narrow pages without hiding the left edge of wide ones. */}
         <div className="flex w-max min-w-full flex-col gap-6">
           {slices.map((slice, index) => (
