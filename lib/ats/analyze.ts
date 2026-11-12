@@ -1,3 +1,4 @@
+import type { KeywordMatch } from "@/lib/ats/keywords";
 import { isEndBeforeStart } from "@/lib/cv/dates";
 import { buildCvView, toMailHref, toTelHref } from "@/lib/cv/render";
 import type { EditorSectionId } from "@/lib/cv/sections";
@@ -5,7 +6,7 @@ import { CUSTOM_SECTION_PREFIX } from "@/lib/validations/cv";
 import type { BuiltInSectionKey, CvDocument, ExperienceEntry } from "@/types/cv";
 
 export type AtsStatus = "pass" | "warn" | "fail";
-export type AtsCategory = "contact" | "sections" | "formatting" | "completeness";
+export type AtsCategory = "contact" | "sections" | "formatting" | "completeness" | "keywords";
 export type AtsImpact = "High" | "Medium";
 export type AtsVerdict = "Strong" | "Good" | "Needs work" | "Weak";
 
@@ -18,6 +19,8 @@ export type AtsCheck = {
   detail: string;
   section: EditorSectionId;
   advice: string;
+  /** Partial credit from 0 to 1; overrides the pass/warn/fail credit when present. */
+  credit?: number;
 };
 
 export type AtsRecommendation = AtsCheck & { impact: AtsImpact };
@@ -36,9 +39,10 @@ export const ATS_CATEGORY_LABELS: Record<AtsCategory, string> = {
   sections: "Sections",
   formatting: "Formatting",
   completeness: "Completeness",
+  keywords: "Keywords",
 };
 
-const CATEGORY_ORDER: readonly AtsCategory[] = ["contact", "sections", "formatting", "completeness"];
+const CATEGORY_ORDER: readonly AtsCategory[] = ["contact", "sections", "formatting", "completeness", "keywords"];
 
 /** Templates that render the profile photo (see the Modern and Executive templates). */
 const PHOTO_TEMPLATES: ReadonlySet<CvDocument["settings"]["template"]> = new Set(["modern", "executive"]);
@@ -48,6 +52,7 @@ const MAX_BULLET_LENGTH = 220;
 const SUMMARY_WORDS = { min: 30, max: 70 } as const;
 const MIN_SKILLS = 5;
 const MAX_RECOMMENDATIONS = 5;
+const KEYWORD_RATIO = { pass: 0.7, warn: 0.4 } as const;
 
 type CheckInput = Omit<AtsCheck, "category" | "weight">;
 
@@ -71,7 +76,8 @@ function scoreOf(checks: AtsCheck[]): number {
   const total = checks.reduce((sum, check) => sum + check.weight, 0);
   if (total === 0) return 0;
   const earned = checks.reduce(
-    (sum, check) => sum + (check.status === "pass" ? check.weight : check.status === "warn" ? check.weight / 2 : 0),
+    (sum, check) =>
+      sum + check.weight * (check.credit ?? (check.status === "pass" ? 1 : check.status === "warn" ? 0.5 : 0)),
     0,
   );
   return Math.round((100 * earned) / total);
@@ -84,7 +90,7 @@ function verdictOf(score: number): AtsVerdict {
   return "Weak";
 }
 
-export function analyzeCv(cv: CvDocument): AtsReport {
+export function analyzeCv(cv: CvDocument, keywordResult: KeywordMatch | null = null): AtsReport {
   const view = buildCvView(cv);
   const checks: AtsCheck[] = [];
   const add = (category: AtsCategory, weight: number, check: CheckInput) =>
@@ -414,6 +420,28 @@ export function analyzeCv(cv: CvDocument): AtsReport {
       detail: `Aim for at least ${MIN_SKILLS} relevant skills.`,
       section: "skills",
       advice: `List at least ${MIN_SKILLS} skills that match the roles you want.`,
+    });
+  }
+
+  // Keywords
+  if (keywordResult && keywordResult.total > 0) {
+    const { found, missing, total } = keywordResult;
+    const ratio = found.length / total;
+    const examples = missing.slice(0, 3).map((keyword) => keyword.display);
+    const list =
+      examples.length === 3
+        ? `${examples[0]}, ${examples[1]}, and ${examples[2]}`
+        : examples.join(" and ");
+    add("keywords", 4, {
+      id: "keywords-match",
+      status: ratio >= KEYWORD_RATIO.pass ? "pass" : ratio >= KEYWORD_RATIO.warn ? "warn" : "fail",
+      credit: ratio,
+      title: `${found.length} of ${total} job keywords found`,
+      detail: "Systems often rank CVs by how well they match the job description's terms.",
+      section: "skills",
+      advice: list
+        ? `Add missing keywords such as ${list} where they truthfully describe your experience.`
+        : "",
     });
   }
 

@@ -14,6 +14,8 @@ export function EditorWorkspace() {
   const [activeSection, setActiveSection] = useState<EditorSectionId>("personal");
   const [hasNavigated, setHasNavigated] = useState(false);
   const [view, setView] = useState<"editor" | "customize" | "ats">("editor");
+  // Memory only: kept across view switches, lost on refresh, never stored or sent.
+  const [jobDescription, setJobDescription] = useState("");
   const previewVisible = usePreviewVisible();
   const section = EDITOR_SECTIONS.find((item) => item.id === activeSection) ?? EDITOR_SECTIONS[0];
 
@@ -44,7 +46,11 @@ export function EditorWorkspace() {
               {view === "customize" ? (
                 <CustomizePanel onBack={backToEditor} />
               ) : view === "ats" ? (
-                <AtsPanel onNavigate={selectSection} />
+                <AtsPanel
+                  onNavigate={selectSection}
+                  jobDescription={jobDescription}
+                  onJobDescriptionChange={setJobDescription}
+                />
               ) : (
                 <SectionPanel section={section} focusOnChange={hasNavigated} />
               )}
