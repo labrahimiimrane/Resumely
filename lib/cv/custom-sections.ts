@@ -44,6 +44,19 @@ export function moveCustomSection(cv: CvDocument, from: number, to: number): CvD
   return { ...cv, customSections, sections };
 }
 
+/** Reorders CV sections and keeps `customSections` in the same relative order as their keys. */
+export function moveSection(cv: CvDocument, from: number, to: number): CvDocument {
+  const inRange = (index: number) => Number.isInteger(index) && index >= 0 && index < cv.sections.length;
+  if (from === to || !inRange(from) || !inRange(to)) return cv;
+  const sections = moveItem(cv.sections, from, to);
+  const byId = new Map(cv.customSections.map((section) => [section.id, section]));
+  const customSections = sections
+    .filter((section) => section.key.startsWith(CUSTOM_SECTION_PREFIX))
+    .map((section) => byId.get(section.key.slice(CUSTOM_SECTION_PREFIX.length)))
+    .filter((section): section is CustomSection => section !== undefined);
+  return { ...cv, sections, customSections };
+}
+
 export function setSectionEnabled(cv: CvDocument, key: SectionKey, enabled: boolean): CvDocument {
   if (!cv.sections.some((section) => section.key === key)) return cv;
   return {

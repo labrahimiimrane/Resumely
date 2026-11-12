@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { ChevronDown, ChevronLeft } from "lucide-react";
 import { ColorField, type Swatch } from "@/components/customize/color-field";
+import { SectionOrder } from "@/components/customize/section-order";
 import { SettingSlider } from "@/components/customize/setting-slider";
 import { PageSizeToggle } from "@/components/preview/page-size-toggle";
 import { Button } from "@/components/ui/button";
@@ -72,7 +73,7 @@ export function CustomizePanel({ onBack }: CustomizePanelProps) {
             Customize
           </h1>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            Adjust typography, colors, and page layout. Changes apply to the preview instantly.
+            Adjust typography, colors, page layout, and section order. Changes apply to the preview instantly.
           </p>
         </div>
       </div>
@@ -152,6 +153,10 @@ export function CustomizePanel({ onBack }: CustomizePanelProps) {
           format={(value) => `${value} pt`}
           onChange={(value) => set("sectionSpacing", value, true)}
         />
+      </SettingsGroup>
+
+      <SettingsGroup title="Section order">
+        <SectionOrder />
       </SettingsGroup>
     </section>
   );
