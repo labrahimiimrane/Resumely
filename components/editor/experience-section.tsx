@@ -1,18 +1,21 @@
 "use client";
 
+import { useId, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BulletListField } from "@/components/editor/bullet-list-field";
+import { BulletListField, type BulletAssistProps } from "@/components/editor/bullet-list-field";
 import { DateField } from "@/components/editor/date-field";
 import { EntryList } from "@/components/editor/entry-list";
 import { TextField } from "@/components/editor/text-field";
+import { WritingAssist, type AssistGroup } from "@/components/editor/writing-assist";
 import { useCv } from "@/hooks/use-cv";
 import { useEntryListActions } from "@/hooks/use-entry-list-actions";
 import { useSyncValidFields } from "@/hooks/use-sync-valid-fields";
 import { formatCvDateRange, isEndBeforeStart } from "@/lib/cv/dates";
 import { createExperienceEntry } from "@/lib/cv/document";
-import { SHORT_TEXT_MAX } from "@/lib/validations/cv";
+import { LIST_MAX, SHORT_TEXT_MAX } from "@/lib/validations/cv";
 import { experienceFormSchema, type ExperienceFormValues } from "@/lib/validations/forms";
+import { ACHIEVEMENT_EXAMPLES, ACTION_VERB_GROUPS } from "@/lib/writing/suggestions";
 import type { ExperienceEntry } from "@/types/cv";
 
 export function ExperienceSection() {
@@ -161,9 +164,58 @@ function ExperienceForm({ entry }: { entry: ExperienceEntry }) {
             hint="Press Enter for a new bullet. Start with an action verb and a result."
             value={list.value}
             onChange={list.onChange}
+            assist={AchievementsAssist}
           />
         )}
       />
     </form>
+  );
+}
+
+const ACHIEVEMENT_EXAMPLE_GROUP: AssistGroup = {
+  label: "Achievement examples",
+  layout: "block",
+  items: ACHIEVEMENT_EXAMPLES,
+  itemLabel: (_, index) => `Insert achievement example ${index + 1}`,
+};
+
+function AchievementsAssist({ append, canAdd }: BulletAssistProps) {
+  const selectId = useId();
+  const [categoryId, setCategoryId] = useState(ACTION_VERB_GROUPS[0].id);
+  const category = ACTION_VERB_GROUPS.find((group) => group.id === categoryId) ?? ACTION_VERB_GROUPS[0];
+  const verbGroup: AssistGroup = {
+    label: `Action verbs for ${category.label.toLowerCase()}`,
+    layout: "chip",
+    items: category.verbs,
+    itemLabel: (verb) => `Insert action verb "${verb}"`,
+    insertText: (verb) => `${verb} `,
+  };
+
+  return (
+    <WritingAssist
+      groups={[verbGroup, ACHIEVEMENT_EXAMPLE_GROUP]}
+      onInsert={append}
+      canInsert={() => canAdd}
+      disabledReason={`Achievement list is full (${LIST_MAX}). Remove a bullet to insert more.`}
+      controls={
+        <div className="flex items-center gap-2">
+          <label htmlFor={selectId} className="text-xs text-muted-foreground">
+            Verb category
+          </label>
+          <select
+            id={selectId}
+            value={category.id}
+            onChange={(event) => setCategoryId(event.target.value)}
+            className="h-7 rounded-md border border-input bg-card px-2 text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            {ACTION_VERB_GROUPS.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      }
+    />
   );
 }

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, type ComponentType, type KeyboardEvent } from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { BULLET_MAX, LIST_MAX } from "@/lib/validations/cv";
+
+export type BulletAssistProps = { append: (text: string) => void; canAdd: boolean };
 
 type BulletListFieldProps = {
   id: string;
@@ -13,9 +15,11 @@ type BulletListFieldProps = {
   hint?: string;
   value: string[];
   onChange: (value: string[]) => void;
+  /** Optional writing help below the add row; `append` fills a trailing empty bullet or adds a new one. */
+  assist?: ComponentType<BulletAssistProps>;
 };
 
-export function BulletListField({ id, legend, singular, hint, value, onChange }: BulletListFieldProps) {
+export function BulletListField({ id, legend, singular, hint, value, onChange, assist: Assist }: BulletListFieldProps) {
   const inputRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
   const addRef = useRef<HTMLButtonElement>(null);
   const pendingFocus = useRef<number | null>(null);
@@ -37,6 +41,19 @@ export function BulletListField({ id, legend, singular, hint, value, onChange }:
     if (!canAdd) return;
     pendingFocus.current = index + 1;
     onChange([...value.slice(0, index + 1), "", ...value.slice(index + 1)]);
+  }
+
+  const lastIndex = value.length - 1;
+  const hasTrailingEmpty = lastIndex >= 0 && value[lastIndex].trim() === "";
+
+  function append(text: string) {
+    if (hasTrailingEmpty) {
+      pendingFocus.current = lastIndex;
+      onChange(value.map((item, i) => (i === lastIndex ? text : item)));
+    } else if (canAdd) {
+      pendingFocus.current = value.length;
+      onChange([...value, text]);
+    }
   }
 
   function removeAt(index: number) {
@@ -97,6 +114,7 @@ export function BulletListField({ id, legend, singular, hint, value, onChange }:
         </Button>
         {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       </div>
+      {Assist ? <Assist append={append} canAdd={canAdd || hasTrailingEmpty} /> : null}
     </fieldset>
   );
 }
