@@ -1,7 +1,7 @@
-import type { CvView } from "@/lib/cv/render";
+import type { PageView } from "@/lib/cv/paginate";
 import type { PresentationSettings } from "@/types/cv";
 
 export type TemplateProps = {
-  view: CvView;
+  view: PageView;
   settings: PresentationSettings;
 };

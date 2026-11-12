@@ -11,11 +11,13 @@ const FONT_STACKS: Record<PresentationSettings["fontFamily"], string> = {
 
 type CvPageProps = {
   settings: PresentationSettings;
+  /** Height follows the content (used by the hidden measurer) instead of one page. */
+  autoHeight?: boolean;
   className?: string;
   children: ReactNode;
 };
 
-export function CvPage({ settings, className, children }: CvPageProps) {
+export function CvPage({ settings, autoHeight = false, className, children }: CvPageProps) {
   const variables = {
     "--cv-font": FONT_STACKS[settings.fontFamily],
     "--cv-font-size": `${settings.fontSize}pt`,
@@ -33,7 +35,9 @@ export function CvPage({ settings, className, children }: CvPageProps) {
       style={variables}
       className={cn(
         "bg-page p-[var(--cv-margin)] font-[family-name:var(--cv-font)] text-[length:var(--cv-font-size)] leading-[var(--cv-line-height)] text-[color:var(--cv-text)] select-text",
-        settings.pageSize === "A4" ? "min-h-[297mm] w-[210mm]" : "min-h-[11in] w-[8.5in]",
+        settings.pageSize === "A4" ? "w-[210mm]" : "w-[8.5in]",
+        // A page is at least one sheet tall and grows instead of clipping, so overflow is never hidden.
+        !autoHeight && (settings.pageSize === "A4" ? "min-h-[297mm]" : "min-h-[11in]"),
         className,
       )}
     >

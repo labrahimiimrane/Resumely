@@ -1,10 +1,6 @@
 import type { ContactItem, ViewSection } from "@/lib/cv/render";
 import { cn } from "@/lib/utils";
 
-export function sectionHeadingId(section: ViewSection) {
-  return `cv-${section.key.replace(/[^a-z0-9]+/gi, "-")}`;
-}
-
 export function CvPhoto({ src, name, className }: { src: string; name: string; className?: string }) {
   return (
     // A plain img keeps the in-memory data URL renderable in the server PDF; next/image adds nothing here.
@@ -83,8 +79,8 @@ export function SectionBody({
     case "experience":
       return (
         <div className={spacing.experience}>
-          {section.items.map((item) => (
-            <div key={item.id}>
+          {section.items.map((item, index) => (
+            <div key={item.id} data-cv-item={index}>
               <EntryHeading
                 title={item.title}
                 aside={item.dates}
@@ -104,8 +100,8 @@ export function SectionBody({
     case "education":
       return (
         <div className={spacing.entries}>
-          {section.items.map((item) => (
-            <div key={item.id}>
+          {section.items.map((item, index) => (
+            <div key={item.id} data-cv-item={index}>
               <EntryHeading
                 title={[item.title, item.detail].filter(Boolean).join(", ")}
                 aside={item.dates}
@@ -119,8 +115,8 @@ export function SectionBody({
     case "skills":
       return (
         <ul className="flex flex-col gap-[0.15em]">
-          {section.groups.map((group) => (
-            <li key={group.id}>
+          {section.groups.map((group, index) => (
+            <li key={group.id} data-cv-item={index}>
               {group.name ? <strong className="font-semibold">{group.name}: </strong> : null}
               {group.skills.join(", ")}
             </li>
@@ -130,8 +126,8 @@ export function SectionBody({
     case "projects":
       return (
         <div className={spacing.entries}>
-          {section.items.map((item) => (
-            <div key={item.id}>
+          {section.items.map((item, index) => (
+            <div key={item.id} data-cv-item={index}>
               <EntryHeading title={item.name} aside="" sub={item.technologies.join(", ")} />
               {item.description ? <p className="mt-[0.2em] whitespace-pre-line">{item.description}</p> : null}
               {item.links.length > 0 ? (
@@ -153,8 +149,8 @@ export function SectionBody({
     case "certifications":
       return (
         <ul className={spacing.certifications}>
-          {section.items.map((item) => (
-            <li key={item.id}>
+          {section.items.map((item, index) => (
+            <li key={item.id} data-cv-item={index}>
               <div className="flex items-baseline justify-between gap-[1em]">
                 <span>
                   {item.name ? <strong className="font-semibold">{item.name}</strong> : null}
