@@ -124,7 +124,7 @@ export function PhotoField() {
           id="show-photo"
           checked={Boolean(photo) && showPhoto}
           disabled={!photo || isProcessing}
-          aria-describedby="show-photo-hint"
+          aria-describedby="show-photo-hint show-photo-templates"
           onCheckedChange={(checked) =>
             updateCv((current) => ({
               ...current,
@@ -139,6 +139,9 @@ export function PhotoField() {
           </Label>
           <p id="show-photo-hint" className="text-xs text-muted-foreground">
             Many applicant tracking systems and regions discourage photos.
+          </p>
+          <p id="show-photo-templates" className="text-xs text-muted-foreground">
+            Shown in the Modern and Executive templates.
           </p>
         </div>
       </div>

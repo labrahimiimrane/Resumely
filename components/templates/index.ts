@@ -1,12 +1,25 @@
 import type { ComponentType } from "react";
+import { ExecutiveTemplate } from "@/components/templates/executive-template";
+import { ModernTemplate } from "@/components/templates/modern-template";
 import { ProfessionalTemplate } from "@/components/templates/professional-template";
 import type { TemplateProps } from "@/components/templates/template-props";
 import type { PresentationSettings } from "@/types/cv";
 
-type TemplateId = PresentationSettings["template"];
+export type TemplateId = PresentationSettings["template"];
 
 export const TEMPLATES: Partial<Record<TemplateId, ComponentType<TemplateProps>>> = {
   professional: ProfessionalTemplate,
+  modern: ModernTemplate,
+  executive: ExecutiveTemplate,
+};
+
+export const TEMPLATE_LABELS: Record<TemplateId, string> = {
+  professional: "Professional",
+  modern: "Modern",
+  executive: "Executive",
+  developer: "Developer",
+  minimal: "Minimal",
+  compact: "Compact",
 };
 
 export function resolveTemplate(id: TemplateId): { Template: ComponentType<TemplateProps>; available: boolean } {
