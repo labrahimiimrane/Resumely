@@ -83,7 +83,7 @@ export function SectionPanel({ section, focusOnChange }: SectionPanelProps) {
           </div>
         ) : null}
       </div>
-      <details key={section.id} className="group rounded-[10px] border border-dashed bg-background">
+      <details key={`tips:${section.id}`} className="group rounded-[10px] border border-dashed bg-background">
         <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-[10px] px-3 py-2 text-xs font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
           <Lightbulb aria-hidden="true" className="size-3.5 text-primary" />
           Writing tips
