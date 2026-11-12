@@ -15,13 +15,14 @@ export function serializeCv(cv: CvDocument): string {
   return JSON.stringify(cv, null, 2);
 }
 
-export function cvFileName(cv: CvDocument): string {
+/** A safe download name from the CV name: ASCII letters, digits, and hyphens only. */
+export function cvFileName(cv: CvDocument, extension: "json" | "pdf" = "json"): string {
   const slug = getCvDisplayName(cv)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .slice(0, FILE_NAME_MAX)
     .replace(/^-+|-+$/g, "");
-  return `${slug || "cv"}.json`;
+  return `${slug || "cv"}.${extension}`;
 }
 
 export function parseCvFile(text: string): ParseCvFileResult {

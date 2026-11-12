@@ -3,6 +3,7 @@
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CvDataMenu } from "@/components/layout/cv-data-menu";
+import { DownloadPdfButton } from "@/components/layout/download-pdf-button";
 import { TemplateSelector } from "@/components/layout/template-selector";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UndoRedoControls } from "@/components/layout/undo-redo-controls";
@@ -42,6 +43,7 @@ export function AppHeader({ onCustomize }: AppHeaderProps) {
         <span className="max-sm:sr-only">Customize</span>
       </Button>
       <ThemeToggle />
+      <DownloadPdfButton />
     </header>
   );
 }
