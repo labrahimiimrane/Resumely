@@ -9,9 +9,11 @@ const geistSans = Geist({
 });
 
 // Offered as a CV font in Customize; only the variable is exposed, the app UI stays on Geist.
+// Not preloaded: most CVs never use it, so the browser fetches it only when a CV renders in Inter.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
