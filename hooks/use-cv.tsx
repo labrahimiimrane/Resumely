@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 import { createEmptyCv } from "@/lib/cv/document";
 import { commit, createHistory, redo as redoHistory, undo as undoHistory, type History } from "@/lib/cv/history";
-import { loadCv, saveCv } from "@/lib/storage/cv-storage";
+import { clearStoredCv, loadCv, saveCv } from "@/lib/storage/cv-storage";
 import type { CvDocument } from "@/types/cv";
 
 /** Autosave waits this long after the last change; leaving the page saves immediately. */
@@ -36,6 +36,8 @@ type CvContextValue = {
   updateCv: (updater: CvUpdater, options?: UpdateOptions) => void;
   /** Replaces the whole CV as one undoable step and remounts the editor forms. */
   replaceCv: (cv: CvDocument) => void;
+  /** Deletes the stored CV and starts an empty one with no undo history. False when storage refuses. */
+  resetCv: () => boolean;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -143,6 +145,18 @@ function LoadedCvProvider({ children }: { children: ReactNode }) {
     [step],
   );
 
+  const resetCv = useCallback(() => {
+    if (!clearStoredCv()) return false;
+    const empty = createEmptyCv();
+    // Marked as saved before the state change, so autosave neither writes the empty CV back
+    // nor flushes the CV that was just cleared.
+    savedRef.current = empty;
+    latestRef.current = empty;
+    saveFailingRef.current = false;
+    setState((current) => ({ history: createHistory(empty), revision: current.revision + 1 }));
+    return true;
+  }, []);
+
   const undo = useCallback(() => step(undoHistory), [step]);
   const redo = useCallback(() => step(redoHistory), [step]);
 
@@ -151,13 +165,14 @@ function LoadedCvProvider({ children }: { children: ReactNode }) {
       cv: present,
       updateCv,
       replaceCv,
+      resetCv,
       undo,
       redo,
       canUndo: history.past.length > 0,
       canRedo: history.future.length > 0,
       revision,
     }),
-    [present, history, revision, updateCv, replaceCv, undo, redo],
+    [present, history, revision, updateCv, replaceCv, resetCv, undo, redo],
   );
 
   return <CvContext.Provider value={value}>{children}</CvContext.Provider>;

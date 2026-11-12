@@ -122,3 +122,19 @@ export function createCustomSection(): CustomSection {
 export function getCvDisplayName(cv: Pick<CvDocument, "name" | "personal">): string {
   return cv.name.trim() || cv.personal.fullName.trim() || "Untitled CV";
 }
+
+/** True when the CV has no content. Settings, template, and section order don't count. */
+export function isCvEmpty(cv: CvDocument): boolean {
+  return (
+    !cv.name.trim() &&
+    !cv.summary.trim() &&
+    Object.values(cv.personal).every((value) => typeof value !== "string" || !value.trim()) &&
+    cv.experience.length === 0 &&
+    cv.education.length === 0 &&
+    cv.skills.length === 0 &&
+    cv.projects.length === 0 &&
+    cv.certifications.length === 0 &&
+    cv.languages.length === 0 &&
+    cv.customSections.length === 0
+  );
+}

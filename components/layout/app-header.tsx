@@ -2,7 +2,7 @@
 
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CvFileActions } from "@/components/layout/cv-file-actions";
+import { CvDataMenu } from "@/components/layout/cv-data-menu";
 import { TemplateSelector } from "@/components/layout/template-selector";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UndoRedoControls } from "@/components/layout/undo-redo-controls";
@@ -35,7 +35,7 @@ export function AppHeader({ onCustomize }: AppHeaderProps) {
       <UndoRedoControls />
       <span aria-hidden="true" className="h-[22px] w-px bg-border" />
       <TemplateSelector />
-      <CvFileActions />
+      <CvDataMenu />
       {/* No aria-pressed: the undo shortcut treats a focused aria-pressed="true" element as a drag. */}
       <Button variant="outline" size="sm" onClick={onCustomize} className="h-[34px]">
         <SlidersHorizontal aria-hidden="true" />

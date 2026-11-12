@@ -52,3 +52,14 @@ export function saveCv(cv: CvDocument): boolean {
     return false;
   }
 }
+
+/** Removes the stored CV and any unreadable backup. Returns false when storage refuses. Never throws. */
+export function clearStoredCv(): boolean {
+  try {
+    window.localStorage.removeItem(CV_STORAGE_KEY);
+    window.localStorage.removeItem(CV_BACKUP_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -17,7 +17,7 @@ function useIsMac() {
 
 function shortcutBlocked(event: KeyboardEvent) {
   if (event.isComposing) return true;
-  if (document.querySelector('[role="alertdialog"]')) return true;
+  if (document.querySelector('[role="alertdialog"], [role="menu"]')) return true;
   return document.activeElement?.getAttribute("aria-pressed") === "true";
 }
 
