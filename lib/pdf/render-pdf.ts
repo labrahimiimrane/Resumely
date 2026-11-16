@@ -6,11 +6,26 @@ import type { CvDocument } from "@/types/cv";
 
 let browserPromise: Promise<Browser> | null = null;
 
+/**
+ * Vercel functions ship no browser, so there we launch the serverless Chromium build from
+ * `@sparticuz/chromium`; everywhere else Playwright's own installed Chromium is used.
+ */
+async function launchChromium(): Promise<Browser> {
+  if (!process.env.VERCEL) return chromium.launch({ timeout: PDF_RENDER_TIMEOUT_MS });
+  const { default: serverlessChromium } = await import("@sparticuz/chromium");
+  return chromium.launch({
+    executablePath: await serverlessChromium.executablePath(),
+    args: serverlessChromium.args,
+    headless: true,
+    timeout: PDF_RENDER_TIMEOUT_MS,
+  });
+}
+
 /** One shared Chromium, launched on first use and relaunched if it fails or disconnects. */
 function getBrowser(): Promise<Browser> {
   if (!browserPromise) {
     // Same budget as a render: a stuck launch rejects, clears itself below, and the next request retries.
-    const launching = chromium.launch({ timeout: PDF_RENDER_TIMEOUT_MS });
+    const launching = launchChromium();
     browserPromise = launching;
     launching.then(
       (browser) => browser.on("disconnected", () => {
@@ -25,10 +40,20 @@ function getBrowser(): Promise<Browser> {
 }
 
 /**
- * The app's own server on loopback; never derived from the request, so Chromium can't be pointed elsewhere.
- * `localhost` rather than 127.0.0.1: `next dev` serves its client scripts only to the hostname it started on.
+ * The origin Chromium loads the print page from; never derived from the request, so Chromium can't be pointed elsewhere.
+ * On Vercel there is no long-running server to reach on loopback, so the deployment's own public URL is used
+ * (the production domain in production, so Deployment Protection on per-deployment URLs doesn't get in the way).
+ * Elsewhere it is the app's own server on loopback; `localhost` rather than 127.0.0.1 because `next dev` serves
+ * its client scripts only to the hostname it started on.
  */
-export function loopbackOrigin(): string | null {
+export function printOrigin(): string | null {
+  if (process.env.VERCEL) {
+    const host =
+      process.env.VERCEL_ENV === "production"
+        ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+        : process.env.VERCEL_URL;
+    return host ? `https://${host}` : null;
+  }
   const port = process.env.PORT;
   return port && /^\d+$/.test(port) ? `http://localhost:${port}` : null;
 }

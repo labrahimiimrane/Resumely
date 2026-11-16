@@ -1,5 +1,5 @@
 import { PDF_MAX_CONCURRENT_RENDERS, PDF_REQUEST_MAX_BYTES } from "@/lib/pdf/limits";
-import { loopbackOrigin, renderCvPdf } from "@/lib/pdf/render-pdf";
+import { printOrigin, renderCvPdf } from "@/lib/pdf/render-pdf";
 import { cvFileName } from "@/lib/storage/cv-file";
 import { cvDocumentSchema } from "@/lib/validations/cv";
 
@@ -58,9 +58,9 @@ export async function POST(request: Request): Promise<Response> {
   if (!parsed.success) return errorResponse(400, "invalid-cv");
   const cv = parsed.data;
 
-  const origin = loopbackOrigin();
+  const origin = printOrigin();
   if (!origin) {
-    console.error("PDF render failed: server port is unknown");
+    console.error("PDF render failed: print origin is unknown");
     return errorResponse(500, "render-failed");
   }
 
