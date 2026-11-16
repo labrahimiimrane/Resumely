@@ -6,9 +6,13 @@ const nextConfig: NextConfig = {
     agentFeedback: true,
   },
   cacheComponents: true,
-  // The serverless Chromium archive is read from disk at runtime, so file tracing can't see it on its own.
+  // Files read from disk at runtime (the serverless Chromium archive, Playwright's browsers.json and
+  // similar) are invisible to file tracing, so the PDF function gets both packages whole.
   outputFileTracingIncludes: {
-    "/api/pdf": ["./node_modules/@sparticuz/chromium/bin/**"],
+    "/api/pdf": [
+      "./node_modules/@sparticuz/chromium/**",
+      "./node_modules/playwright-core/**",
+    ],
   },
   partialPrefetching: true,
   turbopack: {
