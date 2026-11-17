@@ -8,6 +8,7 @@ import {
   field,
   loadExampleCv,
   openApp,
+  previewSectionHeadings,
   readStorage,
   storedFullName,
 } from "./helpers";
@@ -42,6 +43,30 @@ test.describe("autosave and recovery", () => {
 
     await page.reload();
     await expect(field(page, "Full name")).toHaveValue("Ada Lovelace");
+  });
+
+  test("a CV saved before the language setting existed loads as English", async ({ page, context }) => {
+    await openApp(page);
+    await loadExampleCv(page);
+    await expect.poll(() => storedFullName(page)).toBe("Alex Morgan");
+    const saved = (await readStorage(page, CV_STORAGE_KEY)) as { settings: Record<string, unknown> };
+    delete saved.settings.language;
+    await page.close();
+
+    const next = await context.newPage();
+    await next.addInitScript(
+      ([key, value]) => {
+        if (window.sessionStorage.getItem("seeded")) return;
+        window.sessionStorage.setItem("seeded", "1");
+        window.localStorage.setItem(key, value);
+      },
+      [CV_STORAGE_KEY, JSON.stringify(saved)] as const,
+    );
+    await openApp(next);
+
+    await expect(field(next, "Full name")).toHaveValue("Alex Morgan");
+    await expect.poll(() => previewSectionHeadings(next)).toContain("Work Experience");
+    expect(await readStorage(next, CV_BACKUP_KEY)).toBeNull();
   });
 
   test("a corrupted saved CV starts a new CV and keeps the unreadable copy", async ({ page }) => {

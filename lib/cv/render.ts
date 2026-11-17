@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { formatCvDate, formatCvDateRange } from "@/lib/cv/dates";
 import { CUSTOM_SECTION_PREFIX } from "@/lib/validations/cv";
-import type { CvDocument, SectionKey } from "@/types/cv";
+import type { BuiltInSectionKey, CvDocument, CvLanguage, SectionKey } from "@/types/cv";
 
 export type ContactKind = "email" | "phone" | "location" | "linkedin" | "portfolio" | "github";
 export type ContactItem = { kind: ContactKind; text: string; href: string | null };
@@ -38,15 +38,27 @@ export type CvView = {
 };
 
 export const SECTION_HEADINGS = {
-  summary: "Professional Summary",
-  experience: "Work Experience",
-  education: "Education",
-  skills: "Skills",
-  projects: "Projects",
-  certifications: "Certifications",
-  languages: "Languages",
-  custom: "Additional Information",
-} as const;
+  en: {
+    summary: "Professional Summary",
+    experience: "Work Experience",
+    education: "Education",
+    skills: "Skills",
+    projects: "Projects",
+    certifications: "Certifications",
+    languages: "Languages",
+    custom: "Additional Information",
+  },
+  fr: {
+    summary: "Profil professionnel",
+    experience: "Expérience professionnelle",
+    education: "Formation",
+    skills: "Compétences",
+    projects: "Projets",
+    certifications: "Certifications",
+    languages: "Langues",
+    custom: "Informations complémentaires",
+  },
+} as const satisfies Record<CvLanguage, Record<BuiltInSectionKey | "custom", string>>;
 
 const SAFE_HREF = /^(https?:|mailto:|tel:)/i;
 
@@ -111,19 +123,21 @@ function buildContacts(cv: CvDocument): ContactItem[] {
 }
 
 function buildSection(cv: CvDocument, key: SectionKey): ViewSection | null {
+  const { language } = cv.settings;
+  const headings = SECTION_HEADINGS[language];
   if (key.startsWith(CUSTOM_SECTION_PREFIX)) {
     const section = cv.customSections.find((item) => `${CUSTOM_SECTION_PREFIX}${item.id}` === key);
     if (!section) return null;
     const title = clean(section.title);
     const text = clean(section.content);
     if (!text) return null;
-    return { key, type: "custom", heading: title || SECTION_HEADINGS.custom, title: title || SECTION_HEADINGS.custom, text };
+    return { key, type: "custom", heading: title || headings.custom, title: title || headings.custom, text };
   }
 
   switch (key) {
     case "summary": {
       const text = clean(cv.summary);
-      return text ? { key, type: "summary", heading: SECTION_HEADINGS.summary, text } : null;
+      return text ? { key, type: "summary", heading: headings.summary, text } : null;
     }
     case "experience": {
       const items = cv.experience
@@ -133,11 +147,11 @@ function buildSection(cv: CvDocument, key: SectionKey): ViewSection | null {
           title: clean(entry.jobTitle),
           organization: clean(entry.company),
           location: clean(entry.location),
-          dates: formatCvDateRange(entry.startDate, entry.endDate, entry.current),
+          dates: formatCvDateRange(entry.startDate, entry.endDate, entry.current, language),
           bullets: cleanList([...entry.responsibilities, ...entry.achievements]),
         }))
         .filter((item) => hasText(item.title, item.organization, item.location, item.bullets));
-      return items.length ? { key, type: "experience", heading: SECTION_HEADINGS.experience, items } : null;
+      return items.length ? { key, type: "experience", heading: headings.experience, items } : null;
     }
     case "education": {
       const items = cv.education
@@ -147,18 +161,18 @@ function buildSection(cv: CvDocument, key: SectionKey): ViewSection | null {
           title: clean(entry.degree),
           organization: clean(entry.institution),
           detail: clean(entry.fieldOfStudy),
-          dates: formatCvDateRange(entry.startDate, entry.endDate, false),
+          dates: formatCvDateRange(entry.startDate, entry.endDate, false, language),
           description: clean(entry.description),
         }))
         .filter((item) => hasText(item.title, item.organization, item.detail, item.description));
-      return items.length ? { key, type: "education", heading: SECTION_HEADINGS.education, items } : null;
+      return items.length ? { key, type: "education", heading: headings.education, items } : null;
     }
     case "skills": {
       const groups = cv.skills
         .filter((group) => group.enabled)
         .map((group) => ({ id: group.id, name: clean(group.name), skills: cleanList(group.skills) }))
         .filter((group) => group.skills.length > 0);
-      return groups.length ? { key, type: "skills", heading: SECTION_HEADINGS.skills, groups } : null;
+      return groups.length ? { key, type: "skills", heading: headings.skills, groups } : null;
     }
     case "projects": {
       const items = cv.projects
@@ -171,7 +185,7 @@ function buildSection(cv: CvDocument, key: SectionKey): ViewSection | null {
           links: [link(entry.projectUrl), link(entry.githubUrl)].filter((item): item is ViewLink => item !== null),
         }))
         .filter((item) => hasText(item.name, item.description, item.technologies));
-      return items.length ? { key, type: "projects", heading: SECTION_HEADINGS.projects, items } : null;
+      return items.length ? { key, type: "projects", heading: headings.projects, items } : null;
     }
     case "certifications": {
       const items = cv.certifications
@@ -180,18 +194,18 @@ function buildSection(cv: CvDocument, key: SectionKey): ViewSection | null {
           id: entry.id,
           name: clean(entry.name),
           issuer: clean(entry.issuer),
-          date: formatCvDate(entry.issueDate),
+          date: formatCvDate(entry.issueDate, language),
           link: link(entry.credentialUrl),
         }))
         .filter((item) => hasText(item.name, item.issuer));
-      return items.length ? { key, type: "certifications", heading: SECTION_HEADINGS.certifications, items } : null;
+      return items.length ? { key, type: "certifications", heading: headings.certifications, items } : null;
     }
     case "languages": {
       const items = cv.languages
         .filter((entry) => entry.enabled)
         .map((entry) => ({ id: entry.id, language: clean(entry.language), proficiency: clean(entry.proficiency) }))
         .filter((item) => hasText(item.language));
-      return items.length ? { key, type: "languages", heading: SECTION_HEADINGS.languages, items } : null;
+      return items.length ? { key, type: "languages", heading: headings.languages, items } : null;
     }
     default:
       return null;

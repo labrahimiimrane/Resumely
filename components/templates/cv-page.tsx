@@ -30,6 +30,7 @@ export function CvPage({ settings, autoHeight = false, className, children }: Cv
 
   return (
     <article
+      lang={settings.language}
       data-template={settings.template}
       data-page-size={settings.pageSize}
       style={variables}

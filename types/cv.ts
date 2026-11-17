@@ -29,3 +29,4 @@ export type CertificationEntry = z.infer<typeof certificationEntrySchema>;
 export type LanguageEntry = z.infer<typeof languageEntrySchema>;
 export type CustomSection = z.infer<typeof customSectionSchema>;
 export type PresentationSettings = z.infer<typeof presentationSettingsSchema>;
+export type CvLanguage = PresentationSettings["language"];

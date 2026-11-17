@@ -35,6 +35,9 @@ export const FONT_FAMILIES = ["geist", "inter", "georgia", "arial"] as const;
 
 export const PAGE_SIZES = ["A4", "Letter"] as const;
 
+/** The CV's own language: translates its fixed text (headings, dates), never the editor UI or user content. */
+export const CV_LANGUAGES = ["en", "fr"] as const;
+
 /** Numeric presentation limits, shared by the schema and the Customize controls. */
 export const SETTINGS_LIMITS = {
   fontSize: { min: 9, max: 13 },
@@ -169,6 +172,8 @@ export const presentationSettingsSchema = z.object({
   sectionSpacing: z.number().min(SETTINGS_LIMITS.sectionSpacing.min).max(SETTINGS_LIMITS.sectionSpacing.max),
   pageMargin: z.number().min(SETTINGS_LIMITS.pageMargin.min).max(SETTINGS_LIMITS.pageMargin.max),
   pageSize: z.enum(PAGE_SIZES),
+  // CVs saved, exported, or sent before this setting existed have no language; they are English.
+  language: z.enum(CV_LANGUAGES).default("en"),
 });
 
 const sectionStateInputSchema = z.object({

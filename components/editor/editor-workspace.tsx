@@ -6,6 +6,7 @@ import { AtsPanel } from "@/components/ats/ats-panel";
 import { CustomizePanel } from "@/components/customize/customize-panel";
 import { SectionPanel } from "@/components/editor/section-panel";
 import { AppHeader } from "@/components/layout/app-header";
+import { LanguageSelector } from "@/components/layout/language-selector";
 import { MobileActionBar } from "@/components/layout/mobile-action-bar";
 import { SectionNav } from "@/components/layout/section-nav";
 import { TemplateSelector } from "@/components/layout/template-selector";
@@ -118,7 +119,12 @@ export function EditorWorkspace() {
                 <div className="flex shrink-0 items-center justify-center border-b bg-card px-4 py-2">
                   <TemplateSelector showLabel />
                 </div>
-              ) : null}
+              ) : (
+                // Small tablets: the header hides the CV language selector below md, so it lives here.
+                <div className="flex shrink-0 items-center justify-center border-b bg-card px-4 py-2 md:hidden">
+                  <LanguageSelector showLabel />
+                </div>
+              )}
               <PreviewPanel fill />
             </Tabs.Panel>
             {narrow ? <MobileActionBar tab={tab} onCustomize={openCustomize} /> : null}

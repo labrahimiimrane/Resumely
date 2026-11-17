@@ -91,6 +91,8 @@ export async function renderCvPdf(cv: CvDocument, origin: string): Promise<Uint8
         const pdf = await page.pdf({
           preferCSSPageSize: true,
           printBackground: true,
+          // Tagged output carries the document language (<html lang>) and structure for screen readers.
+          tagged: true,
           margin: { top: "0", right: "0", bottom: "0", left: "0" },
         });
         return new Uint8Array(pdf);

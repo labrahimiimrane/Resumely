@@ -39,6 +39,11 @@ function PrintPages({ cv }: { cv: CvDocument }) {
   const [ready, setReady] = useState(false);
   const sheetHeight = PAGE_SIZE_PX[settings.pageSize].height;
 
+  // The PDF takes its document language from <html lang>; set it before the ready flag below.
+  useEffect(() => {
+    document.documentElement.lang = settings.language;
+  }, [settings.language]);
+
   // Ready once fonts and images are loaded and pagination has had a frame to settle.
   useEffect(() => {
     let cancelled = false;

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
-import { CV_STORAGE_KEY, loadExampleCv, openApp, preview, readStorage } from "./helpers";
+import { CV_STORAGE_KEY, loadExampleCv, openApp, preview, readStorage, storedFullName } from "./helpers";
 
 // A real Chromium render on the server; give it room beyond the default 30 s. Serial, because
 // the server allows only a few renders at once and this is the only file that renders PDFs.
@@ -44,6 +44,37 @@ for (const size of ["A4", "Letter"] as const) {
     expect(bytes.subarray(0, 5).toString("latin1")).toBe("%PDF-");
   });
 }
+
+/** The example CV as stored, with its CV language set. */
+async function exampleCvIn(page: Page, language: "en" | "fr") {
+  await expect.poll(() => storedFullName(page)).toBe("Alex Morgan");
+  const cv = (await readStorage(page, CV_STORAGE_KEY)) as { settings: Record<string, unknown> };
+  cv.settings.language = language;
+  return cv;
+}
+
+test.describe("CV language in print and PDF", () => {
+  test("the print route renders a French CV in French with html lang", async ({ page }) => {
+    const cv = await exampleCvIn(page, "fr");
+    await page.addInitScript((data) => {
+      window.__RESUMELY_PRINT__ = data;
+    }, cv);
+    await page.goto("/print");
+    await expect(page.locator('[data-pdf-ready="true"]')).toBeAttached();
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.getByRole("heading", { name: "Expérience professionnelle" }).filter({ visible: true }).first()).toBeVisible();
+    await expect(page.getByText("Aujourd'hui").filter({ visible: true }).first()).toBeVisible();
+  });
+
+  for (const language of ["fr", "en"] as const) {
+    test(`a ${language} CV produces a PDF marked with /Lang (${language})`, async ({ page, request }) => {
+      const response = await request.post("/api/pdf", { data: await exampleCvIn(page, language) });
+      expect(response.status()).toBe(200);
+      const bytes = (await response.body()).toString("latin1");
+      expect(bytes).toMatch(new RegExp(`/Lang\\s*\\(${language}\\)`));
+    });
+  }
+});
 
 test.describe("PDF route errors", () => {
   test("rejects a non-JSON content type with 415", async ({ request }) => {

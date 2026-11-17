@@ -5,10 +5,11 @@ import { ChevronDown, ChevronLeft } from "lucide-react";
 import { ColorField, type Swatch } from "@/components/customize/color-field";
 import { SectionOrder } from "@/components/customize/section-order";
 import { SettingSlider } from "@/components/customize/setting-slider";
+import { LANGUAGE_LABELS } from "@/components/layout/language-selector";
 import { PageSizeToggle } from "@/components/preview/page-size-toggle";
 import { Button } from "@/components/ui/button";
 import { useCv } from "@/hooks/use-cv";
-import { FONT_FAMILIES, SETTINGS_LIMITS } from "@/lib/validations/cv";
+import { CV_LANGUAGES, FONT_FAMILIES, SETTINGS_LIMITS } from "@/lib/validations/cv";
 import type { PresentationSettings } from "@/types/cv";
 
 type FontFamily = PresentationSettings["fontFamily"];
@@ -40,7 +41,6 @@ type CustomizePanelProps = {
 
 export function CustomizePanel({ onBack }: CustomizePanelProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const fontId = useId();
   const { cv, updateCv } = useCv();
   const { settings } = cv;
 
@@ -79,29 +79,12 @@ export function CustomizePanel({ onBack }: CustomizePanelProps) {
       </div>
 
       <SettingsGroup title="Typography">
-        <div className="flex flex-col gap-2">
-          <label htmlFor={fontId} className="text-[13px] font-medium">
-            Font family
-          </label>
-          <div className="relative flex h-9 items-center rounded-md border bg-card text-sm focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
-            <select
-              id={fontId}
-              value={settings.fontFamily}
-              onChange={(event) => set("fontFamily", event.target.value as FontFamily)}
-              className="h-full w-full cursor-pointer appearance-none bg-transparent pr-9 pl-3 outline-none dark:[color-scheme:dark]"
-            >
-              {FONT_FAMILIES.map((font) => (
-                <option key={font} value={font}>
-                  {FONT_LABELS[font]}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              aria-hidden="true"
-              className="pointer-events-none absolute right-3 size-4 text-muted-foreground"
-            />
-          </div>
-        </div>
+        <SelectField
+          label="Font family"
+          value={settings.fontFamily}
+          options={FONT_FAMILIES.map((font) => ({ value: font, label: FONT_LABELS[font] }))}
+          onChange={(value) => set("fontFamily", value)}
+        />
         <SettingSlider
           label="Font size"
           value={settings.fontSize}
@@ -137,6 +120,12 @@ export function CustomizePanel({ onBack }: CustomizePanelProps) {
 
       <SettingsGroup title="Page">
         <PageSizeToggle showLegend />
+        <SelectField
+          label="CV language"
+          value={settings.language}
+          options={CV_LANGUAGES.map((language) => ({ value: language, label: LANGUAGE_LABELS[language] }))}
+          onChange={(value) => set("language", value)}
+        />
         <SettingSlider
           label="Margins"
           value={settings.pageMargin}
@@ -171,5 +160,39 @@ function SettingsGroup({ title, children }: { title: string; children: ReactNode
       </h2>
       {children}
     </section>
+  );
+}
+
+type SelectFieldProps<T extends string> = {
+  label: string;
+  value: T;
+  options: readonly { value: T; label: string }[];
+  onChange: (value: T) => void;
+};
+
+function SelectField<T extends string>({ label, value, options, onChange }: SelectFieldProps<T>) {
+  const id = useId();
+  return (
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="text-[13px] font-medium">
+        {label}
+      </label>
+      <div className="relative flex h-9 items-center rounded-md border bg-card text-sm focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
+        <select
+          id={id}
+          value={value}
+          // The options come from typed constants, so the selected value is always a T.
+          onChange={(event) => onChange(event.target.value as T)}
+          className="h-full w-full cursor-pointer appearance-none bg-transparent pr-9 pl-3 outline-none dark:[color-scheme:dark]"
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 size-4 text-muted-foreground" />
+      </div>
+    </div>
   );
 }

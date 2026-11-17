@@ -25,6 +25,7 @@ export const DEFAULT_SETTINGS: Readonly<PresentationSettings> = {
   sectionSpacing: 14,
   pageMargin: 18,
   pageSize: "A4",
+  language: "en",
 };
 
 export function createEmptyCv(): CvDocument {

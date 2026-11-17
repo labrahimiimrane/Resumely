@@ -4,6 +4,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CvDataMenu } from "@/components/layout/cv-data-menu";
 import { DownloadPdfButton } from "@/components/layout/download-pdf-button";
+import { LanguageSelector } from "@/components/layout/language-selector";
 import { TemplateSelector } from "@/components/layout/template-selector";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UndoRedoControls } from "@/components/layout/undo-redo-controls";
@@ -12,7 +13,7 @@ import { getCvDisplayName } from "@/lib/cv/document";
 
 type AppHeaderProps = {
   onCustomize: () => void;
-  /** Narrow tier: undo/redo, template, Customize and Download PDF move to the bottom bar and Preview tab. */
+  /** Narrow tier: undo/redo, template, Customize and Download PDF move to the bottom bar and Preview tab; CV language stays here. */
   narrow: boolean;
 };
 
@@ -38,6 +39,7 @@ export function AppHeader({ onCustomize, narrow }: AppHeaderProps) {
       {/* Each control renders once per tier (chosen in JS): UndoRedoControls owns a global shortcut listener. */}
       {narrow ? (
         <>
+          <LanguageSelector />
           <ThemeToggle />
           <CvDataMenu />
         </>
@@ -46,6 +48,8 @@ export function AppHeader({ onCustomize, narrow }: AppHeaderProps) {
           <UndoRedoControls />
           <span aria-hidden="true" className="h-[22px] w-px bg-border" />
           <TemplateSelector />
+          {/* Below md the full header has no room for it; the Preview tab row shows it instead. */}
+          <LanguageSelector className="max-md:hidden" />
           <CvDataMenu />
           {/* No aria-pressed: the undo shortcut treats a focused aria-pressed="true" element as a drag. */}
           <Button variant="outline" size="sm" onClick={onCustomize} className="h-[34px]">

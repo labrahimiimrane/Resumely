@@ -1,5 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
-import { cvPages, field, loadExampleCv, openApp, openSection, preview, undoShortcut } from "./helpers";
+import {
+  cvPages,
+  field,
+  loadExampleCv,
+  openApp,
+  openSection,
+  preview,
+  previewSectionHeadings,
+  undoShortcut,
+} from "./helpers";
 
 const SECTIONS = [
   "Personal information",
@@ -84,6 +93,31 @@ test.describe("phone (390px)", () => {
     expect(await scrollsSideways(page), "Preview scrolls sideways").toBe(false);
   });
 
+  test("the header shows the CV language selector beside the theme toggle, and it translates the CV", async ({ page }) => {
+    await openApp(page);
+    await loadExampleCv(page);
+    const header = page.getByRole("banner");
+    const language = header.getByRole("combobox", { name: "CV language" });
+    await expect(language).toBeVisible();
+    expect(await scrollsSideways(page)).toBe(false);
+
+    await language.selectOption({ label: "Français" });
+    await page.getByRole("tab", { name: "Preview" }).click();
+    await expect.poll(() => previewSectionHeadings(page)).toContain("Expérience professionnelle");
+    await expect(language).toBeVisible();
+    // One selector per screen: the Preview tab row holds only the template selector.
+    await expect(page.getByRole("combobox", { name: "CV language" })).toHaveCount(1);
+    expect(await scrollsSideways(page)).toBe(false);
+  });
+
+  test("the slim header fits a 320px phone", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await openApp(page);
+    await loadExampleCv(page);
+    await expect(page.getByRole("banner").getByRole("combobox", { name: "CV language" })).toBeVisible();
+    expect(await scrollsSideways(page)).toBe(false);
+  });
+
   test("undo steps once and in-progress values survive a tab switch", async ({ page }) => {
     await openApp(page);
     await expectSingleStepUndo(page);
@@ -97,6 +131,23 @@ test.describe("phone (390px)", () => {
   });
 });
 
+test.describe("small tablet (700px)", () => {
+  test.use({ viewport: { width: 700, height: 900 } });
+
+  test("the CV language selector moves from the header to the Preview tab", async ({ page }) => {
+    await openApp(page);
+    await loadExampleCv(page);
+    await expect(page.getByRole("banner").getByRole("combobox", { name: "CV language" })).toBeHidden();
+
+    await page.getByRole("tab", { name: "Preview" }).click();
+    const language = page.getByRole("combobox", { name: "CV language" }).filter({ visible: true });
+    await expect(language).toHaveCount(1);
+    await language.selectOption({ label: "Français" });
+    await expect.poll(() => previewSectionHeadings(page)).toContain("Expérience professionnelle");
+    expect(await scrollsSideways(page)).toBe(false);
+  });
+});
+
 test.describe("tablet (1024px)", () => {
   test.use({ viewport: { width: 1024, height: 768 } });
 
@@ -106,6 +157,7 @@ test.describe("tablet (1024px)", () => {
     await expect(header.getByRole("button", { name: "Undo" })).toBeVisible();
     await expect(header.getByRole("button", { name: "Download PDF" })).toBeVisible();
     await expect(header.getByRole("combobox", { name: "Template" })).toBeVisible();
+    await expect(header.getByRole("combobox", { name: "CV language" })).toBeVisible();
     await expect(workspaceTabs(page)).toBeVisible();
 
     const previewTab = page.getByRole("tab", { name: "Preview" });

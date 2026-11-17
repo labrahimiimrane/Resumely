@@ -1,5 +1,15 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { firstPage, keyboardReorder, loadExampleCv, openApp, previewSectionHeadings } from "./helpers";
+import {
+  CV_STORAGE_KEY,
+  cvPages,
+  firstPage,
+  keyboardReorder,
+  loadExampleCv,
+  openApp,
+  previewSectionHeadings,
+  readStorage,
+  undoShortcut,
+} from "./helpers";
 
 /** Reads one of the CV page's custom properties (set inline from the presentation settings). */
 function cssVariable(page: Page, name: string) {
@@ -55,4 +65,38 @@ test("section order moves sections in the preview and hides them", async ({ page
 
   await customize(page).getByRole("switch", { name: "Show Projects on CV" }).click();
   await expect.poll(() => previewSectionHeadings(page)).not.toContain("Projects");
+});
+
+test("CV language translates headings and dates, persists, and undoes", async ({ page }) => {
+  const language = customize(page).getByRole("combobox", { name: "CV language" });
+  await expect(language).toHaveValue("en");
+  await expect(cvPages(page).first()).toContainText("Mar 2021 - Present");
+
+  await language.selectOption({ label: "Français" });
+  await expect.poll(() => previewSectionHeadings(page)).toContain("Expérience professionnelle");
+  await expect(cvPages(page).first()).toContainText("mars 2021 - Aujourd'hui");
+  await expect(firstPage(page)).toHaveAttribute("lang", "fr");
+  // User-written content is never translated.
+  await expect(cvPages(page).first()).toContainText("Alex Morgan");
+
+  await expect
+    .poll(async () => ((await readStorage(page, CV_STORAGE_KEY)) as { settings?: { language?: string } })?.settings?.language)
+    .toBe("fr");
+  await page.reload();
+  await expect.poll(() => previewSectionHeadings(page)).toContain("Expérience professionnelle");
+
+  await page.getByRole("button", { name: "Customize" }).click();
+  await customize(page).getByRole("combobox", { name: "CV language" }).selectOption({ label: "English" });
+  await expect.poll(() => previewSectionHeadings(page)).toContain("Work Experience");
+  await undoShortcut(page);
+  await expect.poll(() => previewSectionHeadings(page)).toContain("Expérience professionnelle");
+});
+
+test("the header CV language selector and the Customize field stay in sync", async ({ page }) => {
+  await page.getByRole("banner").getByRole("combobox", { name: "CV language" }).selectOption({ label: "Français" });
+  await expect.poll(() => previewSectionHeadings(page)).toContain("Expérience professionnelle");
+  await expect(customize(page).getByRole("combobox", { name: "CV language" })).toHaveValue("fr");
+
+  await customize(page).getByRole("combobox", { name: "CV language" }).selectOption({ label: "English" });
+  await expect(page.getByRole("banner").getByRole("combobox", { name: "CV language" })).toHaveValue("en");
 });
